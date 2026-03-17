@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; script-src 'self'; connect-src 'self'; img-src 'self' https: data:;">
+    <title>Veritas Vault</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles/vault.css">
+</head>
+
+<body>
+    <!-- ═══ Titlebar ═══ -->
+    <div id="titlebar">
+        <div class="titlebar-left">
+            <span class="titlebar-icon">🏛</span>
+            <span class="titlebar-title">VERITAS VAULT</span>
+            <span class="titlebar-version">v3.0</span>
+        </div>
+        <div class="titlebar-center">
+            <div id="status-pill" class="status-pill">
+                <span class="status-dot"></span>
+                <span id="status-text">Initializing…</span>
+            </div>
+        </div>
+        <div class="titlebar-controls">
+            <button class="titlebar-btn notification-bell" id="notification-bell" data-action="toggle-followups" title="Follow-ups">
+                🔔
+                <span id="followup-badge" class="followup-badge" style="display:none">0</span>
+            </button>
+            <button class="titlebar-btn" data-action="window-minimize">─</button>
+            <button class="titlebar-btn" data-action="window-maximize">□</button>
+            <button class="titlebar-btn titlebar-close" data-action="window-close">✕</button>
+        </div>
+    </div>
+
+    <!-- ═══ Main Layout ═══ -->
+    <div id="app-container">
+        <!-- Icon Sidebar -->
+        <nav id="sidebar" aria-label="Main navigation">
+            <div class="nav-group">
+                <button class="nav-btn active" data-panel="journal" title="Journal" aria-label="Journal" aria-current="true">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                    </svg>
+                </button>
+                <button class="nav-btn" data-panel="search" title="Search" aria-label="Search">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="m21 21-4.35-4.35" />
+                    </svg>
+                </button>
+                <button class="nav-btn" data-panel="threads" title="Project Threads" aria-label="Project Threads">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path
+                            d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2" />
+                    </svg>
+                </button>
+                <button class="nav-btn" data-panel="tasks" title="Open Tasks" aria-label="Open Tasks">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <polyline points="9 11 12 14 22 4" />
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                    </svg>
+                </button>
+                <button class="nav-btn" data-panel="intelligence" title="AI Intelligence" aria-label="AI Intelligence">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M12 2a8 8 0 0 0-8 8c0 3.4 2.1 6.3 5 7.4V20h6v-2.6c2.9-1.1 5-4 5-7.4a8 8 0 0 0-8-8z" />
+                        <line x1="12" y1="20" x2="12" y2="22" />
+                        <line x1="9" y1="22" x2="15" y2="22" />
+                    </svg>
+                </button>
+                <button class="nav-btn" data-panel="ask" title="Ask Vault" aria-label="Ask Vault">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
+                </button>
+            </div>
+            <div class="nav-group nav-bottom">
+                <button class="nav-btn" data-panel="settings" title="Settings" aria-label="Settings">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <circle cx="12" cy="12" r="3" />
+                        <path
+                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                    </svg>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Content -->
+        <main id="content" aria-label="Content">
+
+            <!-- ═══ Journal Panel ═══ -->
+            <section id="panel-journal" class="panel active">
+                <div class="journal-scroll">
+                    <!-- Morning Brief -->
+                    <div id="morning-brief" class="morning-brief" style="display:none"></div>
+
+                    <!-- Momentum Heatmap -->
+                    <div id="momentum-section" class="momentum-section">
+                        <div class="section-label">Activity</div>
+                        <div id="momentum-grid" class="momentum-grid"></div>
+                        <div class="momentum-meta">
+                            <span id="streak-badge" class="streak-badge"></span>
+                        </div>
+                    </div>
+
+                    <!-- Pinned Sessions -->
+                    <div id="pinned-section" class="pinned-section" style="display:none">
+                        <div class="section-label">📌 Pinned</div>
+                        <div id="pinned-list"></div>
+                    </div>
+
+                    <!-- Daily Timeline -->
+                    <div id="daily-timeline"></div>
+
+                    <!-- Load More -->
+                    <div id="load-more" class="load-more">
+                        <button class="btn-load-more" data-action="load-more">Load earlier days</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══ Search Panel ═══ -->
+            <section id="panel-search" class="panel">
+                <div class="panel-inner">
+                    <div class="search-header">
+                        <input type="text" id="search-input" class="search-input"
+                            placeholder="Search across all captured documents…"
+                            aria-label="Search documents">
+                        <span id="search-count" class="search-count"></span>
+                    </div>
+                    <div id="search-results" class="search-results">
+                        <div class="empty-state">
+                            <div class="empty-icon">🔍</div>
+                            <div class="empty-text">Full-text search across your entire corpus</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══ Threads Panel ═══ -->
+            <section id="panel-threads" class="panel">
+                <div class="panel-inner">
+                    <h2 class="panel-title">Project Threads</h2>
+                    <div class="ki-health-section">
+                        <button class="ki-health-toggle" id="ki-health-toggle" data-action="toggle-ki-health">📊 Show KI Health</button>
+                        <div id="ki-health-panel" style="display:none"></div>
+                    </div>
+                    <div id="threads-list" class="threads-list">
+                        <div class="empty-state">
+                            <div class="empty-icon">🧵</div>
+                            <div class="empty-text">Loading threads…</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══ Tasks Panel ═══ -->
+            <section id="panel-tasks" class="panel">
+                <div class="panel-inner">
+                    <h2 class="panel-title">Open Plans</h2>
+                    <div id="tasks-list" class="tasks-list">
+                        <div class="empty-state">
+                            <div class="empty-icon">✅</div>
+                            <div class="empty-text">Loading tasks…</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══ Intelligence Panel ═══ -->
+            <section id="panel-intelligence" class="panel">
+                <div class="panel-inner">
+                    <div class="intel-header">
+                        <h2 class="panel-title">AI Intelligence</h2>
+                        <span id="ai-status-badge" class="ai-status-badge offline">● Offline</span>
+                    </div>
+                    <div class="intel-actions">
+                        <button class="btn btn-gold btn-sm" data-action="auto-organize">⚡ Auto-Organize Captures</button>
+                    </div>
+                    <div id="intel-dashboard" class="intel-dashboard">
+                        <div class="empty-state"><div class="empty-icon">🧠</div><div class="empty-text">Loading intelligence…</div></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══ Settings Panel ═══ -->
+            <section id="panel-settings" class="panel">
+                <div class="panel-inner">
+                    <h2 class="panel-title">Settings</h2>
+                    <div class="settings-grid">
+                        <div class="settings-group">
+                            <h3>Profile</h3>
+                            <div class="setting-row">
+                                <label>Display Name</label>
+                                <input type="text" id="set-display-name" class="setting-input" value="RJ" placeholder="Your name">
+                            </div>
+                        </div>
+                        <div class="settings-group">
+                            <h3>Capture</h3>
+                            <div class="setting-row">
+                                <label>Clipboard Monitor</label>
+                                <label class="toggle"><input type="checkbox" id="set-clipboard" checked><span
+                                        class="toggle-slider"></span></label>
+                            </div>
+                            <div class="setting-row">
+                                <label>Watch Directory</label>
+                                <span class="setting-val" id="set-watch-dir">~/.gemini/antigravity</span>
+                            </div>
+                            <div class="setting-row">
+                                <label>Capture Token</label>
+                                <span class="setting-val setting-token" id="set-capture-token" title="Click to copy">••••••••</span>
+                            </div>
+                        </div>
+                        <div class="settings-group">
+                            <h3>AI Engine</h3>
+                            <div class="setting-row"><label>Model</label><span class="setting-val"
+                                    id="set-ai-model">qwen2.5:7b</span></div>
+                            <div class="setting-row"><label>Embeddings</label><span class="setting-val">nomic-embed-text</span></div>
+                        </div>
+                        <div class="settings-group">
+                            <h3>System</h3>
+                            <div class="setting-row"><label>Platform</label><span class="setting-val"
+                                    id="set-platform">--</span></div>
+                            <div class="setting-row"><label>Version</label><span class="setting-val"
+                                    id="set-version">--</span></div>
+                            <div class="setting-row"><label>Engine</label><span class="setting-val">SQLite CAS + Audit
+                                    Chain</span></div>
+                        </div>
+                        <div class="settings-group">
+                            <h3>Keyboard Shortcuts</h3>
+                            <div class="setting-row"><label>Search</label><span class="setting-val">Ctrl+K</span></div>
+                            <div class="setting-row"><label>Journal</label><span class="setting-val">Ctrl+J</span></div>
+                            <div class="setting-row"><label>Threads</label><span class="setting-val">Ctrl+T</span></div>
+                            <div class="setting-row"><label>Chat</label><span class="setting-val">Ctrl+Shift+K</span></div>
+                            <div class="setting-row"><label>Follow-ups</label><span class="setting-val">Ctrl+U</span></div>
+                            <div class="setting-row"><label>Export Today</label><span class="setting-val">Ctrl+E</span></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══ Ask (Chat) Panel ═══ -->
+            <section id="panel-ask" class="panel">
+                <div class="panel-inner chat-panel">
+                    <div class="chat-header">
+                        <h2 class="panel-title">Ask Your Vault</h2>
+                        <div class="chat-header-actions">
+                            <span id="rag-mode-badge" class="rag-mode-badge">●</span>
+                            <button class="btn-ghost btn-xs" data-action="clear-chat">Clear</button>
+                            <button class="btn-ghost btn-xs" data-action="rebuild-rag">Rebuild Index</button>
+                        </div>
+                    </div>
+                    <div id="chat-messages" class="chat-messages">
+                        <div class="chat-welcome">
+                            <div class="chat-welcome-icon">🏛</div>
+                            <div class="chat-welcome-title">What do you want to know?</div>
+                            <div class="chat-welcome-sub">Ask anything about your captured sessions, audits, projects, and knowledge items.</div>
+                            <div class="chat-suggestions">
+                                <button class="chat-suggestion" data-action="chat-suggest" data-query="What vulnerabilities have I found recently?">🔍 Recent vulnerabilities</button>
+                                <button class="chat-suggestion" data-action="chat-suggest" data-query="Summarize my OmegaWallet work">💼 OmegaWallet summary</button>
+                                <button class="chat-suggestion" data-action="chat-suggest" data-query="What attack patterns have I documented?">⚔️ Attack patterns</button>
+                                <button class="chat-suggestion" data-action="chat-suggest" data-query="What tasks are still open?">📋 Open tasks</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-input-bar">
+                        <textarea id="chat-input" class="chat-input" placeholder="Ask your vault..." rows="1"></textarea>
+                        <button id="chat-send" class="btn-gold chat-send" data-action="send-chat" disabled>↑</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Follow-Up Panel (dropdown from bell) -->
+            <div id="followup-panel" class="followup-panel" style="display:none">
+                <div class="followup-header">
+                    <span>Smart Follow-Ups</span>
+                    <button class="btn-ghost btn-xs" data-action="close-followups">✕</button>
+                </div>
+                <div id="followup-list" class="followup-list">
+                    <div class="empty-text">Scanning for follow-ups…</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Artifact Viewer Overlay -->
+    <div id="artifact-overlay" class="artifact-overlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="artifact-title">
+        <div class="artifact-panel">
+            <div class="artifact-header">
+                <span id="artifact-title" class="artifact-title"></span>
+                <button class="artifact-close" data-action="close-artifact" aria-label="Close artifact viewer">✕</button>
+            </div>
+            <div id="artifact-body" class="artifact-body"></div>
+        </div>
+    </div>
+
+    <!-- Quick Note Modal -->
+    <div id="note-modal" class="note-modal" style="display:none" role="dialog" aria-modal="true" aria-label="Add a quick note">
+        <div class="note-modal-inner">
+            <textarea id="note-input" class="note-input" placeholder="Add a note…" rows="3"></textarea>
+            <div class="note-actions">
+                <button class="btn-ghost" data-action="close-note">Cancel</button>
+                <button class="btn-gold" data-action="submit-note">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create KI Modal -->
+    <div id="create-ki-modal" class="note-modal" style="display:none" role="dialog" aria-modal="true" aria-label="Create Knowledge Item">
+        <div class="note-modal-inner" style="max-width:420px">
+            <div class="modal-header">Create Knowledge Item</div>
+            <input type="text" id="create-ki-title" class="search-input" placeholder="Enter KI title…" style="margin-bottom:8px">
+            <div id="create-ki-captures" class="create-ki-captures" style="font-size:0.75rem;color:var(--text-muted);margin-bottom:10px"></div>
+            <div class="note-actions">
+                <button class="btn-ghost" data-action="close-create-ki">Cancel</button>
+                <button class="btn-gold" data-action="confirm-create-ki">Create KI</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- KI Picker Modal -->
+    <div id="ki-picker-modal" class="note-modal" style="display:none" role="dialog" aria-modal="true" aria-label="Link to Knowledge Item">
+        <div class="note-modal-inner" style="max-width:420px">
+            <div class="modal-header">Link to Knowledge Item</div>
+            <div id="ki-picker-list" class="ki-picker-list"></div>
+            <div class="note-actions">
+                <button class="btn-ghost" data-action="close-ki-picker">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="lib/marked.min.js"></script>
+    <script src="lib/highlight.min.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>

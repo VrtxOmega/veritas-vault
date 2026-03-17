@@ -1,0 +1,60 @@
+{
+    "name": "veritas-vault",
+    "version": "3.0.0",
+    "description": "Veritas Vault — Background-listening, auto-organizing AI interaction notebook",
+    "main": "main.js",
+    "scripts": {
+        "start": "node launch.js",
+        "dev": "node launch.js --dev",
+        "dist": "electron-builder --win",
+        "rebuild": "npx @electron/rebuild"
+    },
+    "author": "RJ Lopez",
+    "license": "BSL-1.1",
+    "dependencies": {
+        "chokidar": "^4.0.3",
+        "highlight.js": "^11.11.1",
+        "marked": "^17.0.4",
+        "minisearch": "^7.2.0",
+        "sql.js": "^1.11.0"
+    },
+    "devDependencies": {
+        "electron": "^34.2.0",
+        "electron-builder": "^26.0.12"
+    },
+    "build": {
+        "appId": "com.veritas.vault",
+        "productName": "VeritasVault",
+        "win": {
+            "target": [
+                "nsis"
+            ],
+            "icon": "veritas_vault.ico"
+        },
+        "nsis": {
+            "oneClick": false,
+            "allowToChangeInstallationDirectory": true,
+            "createDesktopShortcut": true,
+            "createStartMenuShortcut": true
+        },
+        "files": [
+            "main.js",
+            "db.js",
+            "archivist.js",
+            "watcher.js",
+            "capture-server.js",
+            "clipboard-monitor.js",
+            "journal.js",
+            "vault-ai.js",
+            "vault-rag.js",
+            "followup-engine.js",
+            "vault-logger.js",
+            "launch.js",
+            "preload.js",
+            "renderer/**/*",
+            "veritas_vault.ico"
+        ],
+        "compression": "normal",
+        "npmRebuild": true
+    }
+}

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            width: 320px;
+            font-family: 'Segoe UI', -apple-system, sans-serif;
+            background: #0D0D0D;
+            color: #F0F0F0;
+            padding: 16px;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #2A2A2A;
+        }
+        .header img { width: 24px; height: 24px; }
+        .header h1 {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+        .header .version {
+            font-size: 10px;
+            color: #7A756C;
+            margin-left: auto;
+            font-weight: 500;
+        }
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin-bottom: 14px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status-bar.connected {
+            background: rgba(74, 222, 128, 0.08);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+            color: #4ADE80;
+        }
+        .status-bar.disconnected {
+            background: rgba(248, 113, 113, 0.08);
+            border: 1px solid rgba(248, 113, 113, 0.2);
+            color: #F87171;
+        }
+        .status-bar.checking {
+            background: rgba(251, 191, 36, 0.08);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            color: #FBBF24;
+        }
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .connected .dot { background: #4ADE80; }
+        .disconnected .dot { background: #F87171; }
+        .checking .dot { background: #FBBF24; animation: pulse 1s infinite; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .field-group {
+            margin-bottom: 14px;
+        }
+        .field-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: #B8B0A8;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        .field-group input {
+            width: 100%;
+            padding: 8px 10px;
+            background: #1A1A1A;
+            border: 1px solid #2A2A2A;
+            border-radius: 6px;
+            color: #F0F0F0;
+            font-size: 13px;
+            font-family: 'JetBrains Mono', 'Cascadia Code', monospace;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .field-group input:focus {
+            border-color: rgba(212, 175, 55, 0.4);
+        }
+        .field-group input::placeholder {
+            color: #5A574F;
+        }
+        .hint {
+            font-size: 10px;
+            color: #7A756C;
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+        .field-row {
+            display: flex;
+            gap: 6px;
+        }
+        .field-row input { flex: 1; }
+        .btn-fetch {
+            padding: 6px 10px;
+            background: rgba(74, 222, 128, 0.1);
+            border: 1px solid rgba(74, 222, 128, 0.25);
+            border-radius: 6px;
+            color: #4ADE80;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .btn-fetch:hover { background: rgba(74, 222, 128, 0.2); }
+        .btn-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        .btn {
+            flex: 1;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: rgba(212, 175, 55, 0.15);
+            color: #D4AF37;
+            border-color: rgba(212, 175, 55, 0.3);
+        }
+        .btn-primary:hover {
+            background: rgba(212, 175, 55, 0.25);
+        }
+        .btn-secondary {
+            background: #1A1A1A;
+            color: #B8B0A8;
+            border-color: #2A2A2A;
+        }
+        .btn-secondary:hover {
+            background: #212121;
+            color: #F0F0F0;
+        }
+        .stats {
+            display: flex;
+            gap: 12px;
+            padding: 10px 0;
+            border-top: 1px solid #2A2A2A;
+            margin-top: 14px;
+        }
+        .stat {
+            font-size: 11px;
+            color: #7A756C;
+        }
+        .stat strong {
+            color: #B8B0A8;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="icon48.png" alt="Vault">
+        <h1>Veritas Vault</h1>
+        <span class="version">v3.0</span>
+    </div>
+
+    <div id="status" class="status-bar checking">
+        <span class="dot"></span>
+        <span id="status-text">Checking connection…</span>
+    </div>
+
+    <div class="field-group">
+        <label>Capture Token</label>
+        <div class="field-row">
+            <input type="password" id="token-input" placeholder="Paste token or click Fetch" autocomplete="off">
+            <button class="btn btn-fetch" id="fetch-btn" title="Auto-fetch from running Vault">⟳ Fetch</button>
+        </div>
+        <div class="hint">Click 'Fetch' to auto-sync from running Vault</div>
+    </div>
+
+    <div class="field-group">
+        <label>Server URL</label>
+        <input type="text" id="server-input" value="http://localhost:47831" placeholder="http://localhost:47831">
+    </div>
+
+    <div class="btn-row">
+        <button class="btn btn-primary" id="save-btn">Save & Test</button>
+        <button class="btn btn-secondary" id="clear-btn">Clear Queue</button>
+    </div>
+
+    <div class="stats" id="stats">
+        <div class="stat"><strong id="stat-queued">0</strong> queued</div>
+        <div class="stat"><strong id="stat-sent">0</strong> sent today</div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

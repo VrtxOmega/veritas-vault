@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html style="margin:0;padding:0;height:100%;overflow:hidden">
+
+<head>
+    <meta charset="utf-8">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            background: #0D0D0D;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            color: #ECECEC;
+            -webkit-app-region: drag;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 24px;
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            color: #D4AF37;
+            margin-bottom: 6px;
+        }
+
+        .sub {
+            font-size: 0.72rem;
+            color: #9A9590;
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Stage indicators */
+        .stages {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .stage-pill {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.6rem;
+            letter-spacing: 0.3px;
+            background: #1A1A1A;
+            color: #5A574F;
+            border: 1px solid #252525;
+            transition: all 0.4s ease;
+        }
+
+        .stage-pill .stage-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #333;
+            transition: background 0.4s ease;
+        }
+
+        .stage-pill.active {
+            background: #1F1A0F;
+            color: #D4AF37;
+            border-color: #3D3520;
+        }
+
+        .stage-pill.active .stage-dot {
+            background: #D4AF37;
+            box-shadow: 0 0 4px #D4AF37;
+        }
+
+        .stage-pill.done {
+            background: #0F1F0F;
+            color: #4A8B4A;
+            border-color: #1A3D1A;
+        }
+
+        .stage-pill.done .stage-dot {
+            background: #4A8B4A;
+        }
+
+        .bar-wrap {
+            width: 280px;
+            height: 4px;
+            background: #252525;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #D4AF37, #E8C84A);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .status {
+            font-size: 0.68rem;
+            color: #5A574F;
+            min-height: 1.2em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="logo">VERITAS VAULT</div>
+        <div class="sub">Indexing your knowledge base</div>
+        <div class="stages">
+            <div class="stage-pill" data-stage="1">
+                <span class="stage-dot"></span>Config
+            </div>
+            <div class="stage-pill" data-stage="2">
+                <span class="stage-dot"></span>Docs
+            </div>
+            <div class="stage-pill" data-stage="3">
+                <span class="stage-dot"></span>Code
+            </div>
+            <div class="stage-pill" data-stage="4">
+                <span class="stage-dot"></span>Other
+            </div>
+        </div>
+        <div class="bar-wrap">
+            <div class="bar" id="bar"></div>
+        </div>
+        <div class="status" id="status">Initializing…</div>
+    </div>
+    <script>
+        // No nodeIntegration required — main process calls window.updateProgress()
+        // via webContents.executeJavaScript()
+        let currentStage = 0;
+
+        window.updateProgress = function (pct, msg) {
+            const bar = document.getElementById('bar');
+            const status = document.getElementById('status');
+            if (pct != null) bar.style.width = pct + '%';
+            if (msg) status.textContent = msg;
+
+            // Parse stage from message (Stage N: Label format)
+            const stageMatch = msg && msg.match(/Stage (\d)/);
+            const stage = stageMatch ? parseInt(stageMatch[1]) : (pct >= 100 ? 5 : null);
+
+            if (stage != null && stage !== currentStage) {
+                document.querySelectorAll('.stage-pill').forEach(pill => {
+                    const s = parseInt(pill.dataset.stage);
+                    if (s < stage) {
+                        pill.classList.remove('active');
+                        pill.classList.add('done');
+                    } else if (s === stage) {
+                        pill.classList.add('active');
+                        pill.classList.remove('done');
+                    } else {
+                        pill.classList.remove('active', 'done');
+                    }
+                });
+                currentStage = stage;
+            }
+
+            if (pct >= 100) {
+                document.querySelectorAll('.stage-pill').forEach(pill => {
+                    pill.classList.remove('active');
+                    pill.classList.add('done');
+                });
+            }
+        };
+    </script>
+</body>
+
+</html>

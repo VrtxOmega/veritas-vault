@@ -1,0 +1,43 @@
+{
+    "manifest_version": 3,
+    "name": "Veritas Vault — Session Capture",
+    "version": "3.0.0",
+    "description": "Auto-captures Gemini and ChatGPT conversations for Veritas Vault journal",
+    "action": {
+        "default_popup": "popup.html",
+        "default_icon": {
+            "48": "icon48.png",
+            "128": "icon128.png"
+        }
+    },
+    "permissions": [
+        "activeTab",
+        "storage"
+    ],
+    "host_permissions": [
+        "https://gemini.google.com/*",
+        "https://chatgpt.com/*",
+        "https://claude.ai/*",
+        "http://localhost:47831/*"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://gemini.google.com/*",
+                "https://chatgpt.com/*",
+                "https://claude.ai/*"
+            ],
+            "js": [
+                "content.js"
+            ],
+            "run_at": "document_idle"
+        }
+    ],
+    "icons": {
+        "48": "icon48.png",
+        "128": "icon128.png"
+    }
+}

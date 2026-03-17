@@ -1,0 +1,36 @@
+# Ignore everything by default
+*
+
+# Allow source files
+!.gitignore
+!README.md
+!LICENSE
+!package.json
+!package-lock.json
+!main.js
+!preload.js
+!db.js
+!archivist.js
+!journal.js
+!vault-ai.js
+!vault-rag.js
+!capture-server.js
+!followup-engine.js
+!watcher.js
+!clipboard-monitor.js
+!vault-logger.js
+!launch.js
+!start.vbs
+!veritas_vault.ico
+!veritas_vault_icon.png
+
+# Allow renderer directory
+!renderer/
+!renderer/**
+
+# Allow extension directory
+!extension/
+!extension/**
+
+# Temp/build artifacts
+create_repo.js
