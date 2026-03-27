@@ -1,8 +1,8 @@
-/* ═══════════════════════════════════════════════════════════════
-   VERITAS VAULT v3.0 — Premium Design System
+/* ---------------------------------------------------------------
+   VERITAS VAULT v3.0 � Premium Design System
    Obsidian (#0D0D0D) + Gold (#D4AF37)
    Google-tier polish. Premium depth. Full readability.
-   ═══════════════════════════════════════════════════════════════ */
+   --------------------------------------------------------------- */
 
 :root {
     --bg: #0D0D0D;
@@ -58,7 +58,7 @@ body {
     text-rendering: optimizeLegibility;
 }
 
-/* ── Custom Scrollbar (professional thin style) ───────── */
+/* -- Custom Scrollbar (professional thin style) --------- */
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -82,7 +82,7 @@ body {
     background: transparent;
 }
 
-/* ── Titlebar ─────────────────────────────────────────────── */
+/* -- Titlebar ----------------------------------------------- */
 #titlebar {
     height: var(--titlebar-h);
     display: flex;
@@ -92,7 +92,7 @@ body {
     border-bottom: 1px solid var(--border);
     -webkit-app-region: drag;
     padding: 0 16px;
-    z-index: 100;
+    z-index: 100; position: relative;
 }
 
 .titlebar-left {
@@ -185,13 +185,13 @@ body {
     color: #fff;
 }
 
-/* ── Layout ───────────────────────────────────────────────── */
+/* -- Layout ------------------------------------------------- */
 #app-container {
     display: flex;
     height: calc(100vh - var(--titlebar-h));
 }
 
-/* ── Sidebar (icon-only) ──────────────────────────────────── */
+/* -- Sidebar (icon-only) ------------------------------------ */
 #sidebar {
     width: var(--sidebar-w);
     background: var(--bg);
@@ -242,7 +242,7 @@ body {
     pointer-events: none;
 }
 
-/* ── Content ──────────────────────────────────────────────── */
+/* -- Content ------------------------------------------------ */
 #content {
     flex: 1;
     overflow: hidden;
@@ -272,7 +272,7 @@ body {
     margin-bottom: 24px;
 }
 
-/* ── Journal Scroll ───────────────────────────────────────── */
+/* -- Journal Scroll ----------------------------------------- */
 .journal-scroll {
     max-width: var(--journal-max);
     margin: 0 auto;
@@ -280,7 +280,7 @@ body {
     scroll-behavior: smooth;
 }
 
-/* ── Morning Brief ────────────────────────────────────────── */
+/* -- Morning Brief ------------------------------------------ */
 .morning-brief {
     background: linear-gradient(145deg, var(--bg-card) 0%, rgba(212, 175, 55, 0.06) 100%);
     border: 1px solid var(--border-gold);
@@ -339,7 +339,7 @@ body {
     font-weight: 600;
 }
 
-/* ── Momentum Heatmap ─────────────────────────────────────── */
+/* -- Momentum Heatmap --------------------------------------- */
 .momentum-section {
     margin-bottom: 28px;
 }
@@ -401,7 +401,7 @@ body {
     font-weight: 600;
 }
 
-/* ── Pinned Section ───────────────────────────────────────── */
+/* -- Pinned Section ----------------------------------------- */
 .pinned-section {
     margin-bottom: 28px;
 }
@@ -435,7 +435,7 @@ body {
     color: var(--text-muted);
 }
 
-/* ── Day Card ─────────────────────────────────────────────── */
+/* -- Day Card ----------------------------------------------- */
 .day-card {
     margin-bottom: 36px;
 }
@@ -543,7 +543,7 @@ body {
     margin-bottom: 12px;
 }
 
-/* ── Session Card ─────────────────────────────────────────── */
+/* -- Session Card ------------------------------------------- */
 .session-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
@@ -728,7 +728,7 @@ body {
     line-height: 1.5;
 }
 
-/* ── Search ───────────────────────────────────────────────── */
+/* -- Search ------------------------------------------------- */
 .search-header {
     margin-bottom: 20px;
     position: relative;
@@ -805,7 +805,7 @@ body {
     border-radius: 2px;
 }
 
-/* ── Project Threads ──────────────────────────────────────── */
+/* -- Project Threads ---------------------------------------- */
 .thread-card {
     padding: 16px;
     background: var(--bg-card);
@@ -848,7 +848,7 @@ body {
     color: var(--text-muted);
 }
 
-/* ── Tasks ─────────────────────────────────────────────────── */
+/* -- Tasks --------------------------------------------------- */
 .task-group {
     margin-bottom: 20px;
     padding: 16px;
@@ -896,7 +896,7 @@ body {
     color: var(--text);
 }
 
-/* ── Settings ─────────────────────────────────────────────── */
+/* -- Settings ----------------------------------------------- */
 .settings-grid {
     display: flex;
     flex-direction: column;
@@ -973,7 +973,7 @@ body {
     transform: translateX(16px);
 }
 
-/* ── Empty States ─────────────────────────────────────────── */
+/* -- Empty States ------------------------------------------- */
 .empty-state {
     display: flex;
     flex-direction: column;
@@ -992,7 +992,7 @@ body {
     font-size: 14px;
 }
 
-/* ── Buttons ──────────────────────────────────────────────── */
+/* -- Buttons ------------------------------------------------ */
 .btn-ghost {
     background: none;
     border: 1px solid var(--border);
@@ -1054,7 +1054,7 @@ body {
     color: var(--gold);
 }
 
-/* ── Artifact Overlay ─────────────────────────────────────── */
+/* -- Artifact Overlay --------------------------------------- */
 .artifact-overlay {
     position: fixed;
     inset: 0;
@@ -1140,7 +1140,7 @@ body {
     padding: 24px;
 }
 
-/* ── Markdown Rendering ───────────────────────────────────── */
+/* -- Markdown Rendering ------------------------------------- */
 .artifact-body h1 {
     font-size: 22px;
     font-weight: 800;
@@ -1253,7 +1253,7 @@ body {
     margin: 20px 0;
 }
 
-/* ── Note Modal ───────────────────────────────────────────── */
+/* -- Note Modal --------------------------------------------- */
 .note-modal {
     position: fixed;
     inset: 0;
@@ -1298,7 +1298,7 @@ body {
     gap: 8px;
 }
 
-/* ── Scrollbar ────────────────────────────────────────────── */
+/* -- Scrollbar ---------------------------------------------- */
 ::-webkit-scrollbar {
     width: 6px;
 }
@@ -1316,7 +1316,7 @@ body {
     background: var(--text-muted);
 }
 
-/* ── Animations ───────────────────────────────────────────── */
+/* -- Animations --------------------------------------------- */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -1333,7 +1333,7 @@ body {
     animation: fadeIn 0.3s ease forwards;
 }
 
-/* ── Thread Cards (Unified Project View) ─────────────────── */
+/* -- Thread Cards (Unified Project View) ------------------- */
 .threads-list {
     display: flex;
     flex-direction: column;
@@ -1403,9 +1403,9 @@ body {
 }
 
 
-/* ═══════════════════════════════════════════
+/* -------------------------------------------
    SOURCE GROUPS (Collapsible Accordions)
-   ═══════════════════════════════════════════ */
+   ------------------------------------------- */
 
 .source-group {
     margin: 8px 0;
@@ -1445,9 +1445,9 @@ body {
 }
 
 
-/* ═══════════════════════════════════════════
+/* -------------------------------------------
    DAY PRODUCTION SUMMARY
-   ═══════════════════════════════════════════ */
+   ------------------------------------------- */
 
 .day-summary {
     display: flex;
@@ -1474,9 +1474,9 @@ body {
 }
 
 
-/* ═══════════════════════════════════════════
+/* -------------------------------------------
    ENHANCED NOTES
-   ═══════════════════════════════════════════ */
+   ------------------------------------------- */
 
 .note-item {
     display: flex;
@@ -1520,9 +1520,9 @@ body {
 }
 
 
-/* ═══════════════════════════════════════════
+/* -------------------------------------------
    TASK FILTERS
-   ═══════════════════════════════════════════ */
+   ------------------------------------------- */
 
 .task-filters {
     display: flex;
@@ -1564,9 +1564,9 @@ body {
 }
 
 
-/* ═══════════════════════════════════════════
+/* -------------------------------------------
    TASK PROGRESS BARS
-   ═══════════════════════════════════════════ */
+   ------------------------------------------- */
 
 .task-group-header {
     display: flex;
@@ -1611,9 +1611,9 @@ body {
     color: var(--text-muted);
 }
 
-/* ═══════════════════════════════════════════
+/* -------------------------------------------
    BUTTON UTILITIES
-   ═══════════════════════════════════════════ */
+   ------------------------------------------- */
 
 .btn-xs {
     padding: 2px 8px;
@@ -1622,9 +1622,9 @@ body {
 }
 
 
-/* ═══════════════════════════════════════════
+/* -------------------------------------------
    THREAD DETAIL (Expanded View)
-   ═══════════════════════════════════════════ */
+   ------------------------------------------- */
 
 .thread-card {
     cursor: pointer;
@@ -1779,9 +1779,9 @@ body {
 }
 
 
-/* ═══════════════════════════════════════════
+/* -------------------------------------------
    AI INTELLIGENCE PANEL
-   ═══════════════════════════════════════════ */
+   ------------------------------------------- */
 
 .intel-header {
     display: flex;
@@ -1893,9 +1893,9 @@ body {
 }
 
 
-/* ═══════════════════════════════════════════
+/* -------------------------------------------
    AUTO-SUGGEST CHIPS
-   ═══════════════════════════════════════════ */
+   ------------------------------------------- */
 
 .suggest-row {
     display: flex;
@@ -1949,9 +1949,9 @@ body {
 }
 
 
-/* ═══════════════════════════════════════════
+/* -------------------------------------------
    KI PICKER + MODALS
-   ═══════════════════════════════════════════ */
+   ------------------------------------------- */
 
 .modal-header {
     font-size: 0.85rem;
@@ -2011,9 +2011,9 @@ body {
 .btn-gold:disabled { opacity: 0.5; cursor: not-allowed; }
 
 
-/* ═══════════════════════════════════════════
+/* -------------------------------------------
    INTELLIGENCE v2
-   ═══════════════════════════════════════════ */
+   ------------------------------------------- */
 
 .intel-stat-grid {
     display: grid;
@@ -2092,11 +2092,11 @@ body {
 }
 
 
-/* ═══════════════════════════════════════════════════════════════
-   v3.0 — Chat Panel + Follow-Up System
-   ═══════════════════════════════════════════════════════════════ */
+/* ---------------------------------------------------------------
+   v3.0 � Chat Panel + Follow-Up System
+   --------------------------------------------------------------- */
 
-/* ── Notification Bell ────────────────────────────────────── */
+/* -- Notification Bell -------------------------------------- */
 .notification-bell {
     position: relative;
     font-size: 14px;
@@ -2125,7 +2125,7 @@ body {
     50% { transform: scale(1.1); }
 }
 
-/* ── Follow-Up Panel ──────────────────────────────────────── */
+/* -- Follow-Up Panel ---------------------------------------- */
 .followup-panel {
     position: absolute;
     top: var(--titlebar-h);
@@ -2241,7 +2241,7 @@ body {
     background: rgba(212, 175, 55, 0.1);
 }
 
-/* ── Chat Panel ───────────────────────────────────────────── */
+/* -- Chat Panel --------------------------------------------- */
 .chat-panel {
     display: flex;
     flex-direction: column;
@@ -2278,7 +2278,7 @@ body {
 .rag-mode-badge.keyword { color: var(--amber); }
 .rag-mode-badge.offline { color: var(--red); }
 
-/* ── Chat Messages ────────────────────────────────────────── */
+/* -- Chat Messages ------------------------------------------ */
 .chat-messages {
     flex: 1;
     overflow-y: auto;
@@ -2334,7 +2334,7 @@ body {
     background: var(--gold-glow);
 }
 
-/* ── Messages ─────────────────────────────────────────────── */
+/* -- Messages ----------------------------------------------- */
 .chat-msg {
     margin-bottom: 20px;
     max-width: 85%;
@@ -2412,7 +2412,7 @@ body {
     color: var(--gold);
 }
 
-/* ── Sources ──────────────────────────────────────────────── */
+/* -- Sources ------------------------------------------------ */
 .chat-sources {
     display: flex;
     flex-wrap: wrap;
@@ -2436,7 +2436,7 @@ body {
     color: var(--gold);
 }
 
-/* ── Typing Indicator ─────────────────────────────────────── */
+/* -- Typing Indicator --------------------------------------- */
 .chat-typing {
     display: flex;
     gap: 4px;
@@ -2460,7 +2460,7 @@ body {
     30% { opacity: 1; transform: translateY(-4px); }
 }
 
-/* ── Input Bar ────────────────────────────────────────────── */
+/* -- Input Bar ---------------------------------------------- */
 .chat-input-bar {
     display: flex;
     gap: 8px;
@@ -2515,7 +2515,7 @@ body {
     box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
 }
 
-/* ── Resume Context Panel ──────────────────────── */
+/* -- Resume Context Panel ------------------------ */
 .resume-context {
     margin: 12px 0;
     padding: 12px 16px;
@@ -2580,7 +2580,7 @@ body {
     border-radius: 4px;
 }
 
-/* ── Weekly Rollup Panel ────────────────────────── */
+/* -- Weekly Rollup Panel -------------------------- */
 .weekly-rollup {
     margin: 12px 0;
     padding: 12px 16px;
@@ -2646,7 +2646,7 @@ body {
 }
 
 
-/* ── Capture Session Detail ────────────────────── */
+/* -- Capture Session Detail ---------------------- */
 .thread-session-header {
     cursor: pointer;
 }
@@ -2717,7 +2717,7 @@ body {
 }
 
 
-/* ── Action Items Panel ────────────────────────── */
+/* -- Action Items Panel -------------------------- */
 .action-items-panel {
     margin: 12px 0;
     padding: 12px 16px;
@@ -2794,7 +2794,7 @@ body {
 }
 
 
-/* ── Toast Notifications ───────────────────────── */
+/* -- Toast Notifications ------------------------- */
 #toast-container {
     position: fixed;
     top: 20px;
@@ -2833,7 +2833,7 @@ body {
 .toast-warning { border-color: rgba(255, 193, 7, 0.3); }
 .toast-sweep { border-color: rgba(212, 175, 67, 0.3); }
 
-/* ── KI Health Dashboard ───────────────────────── */
+/* -- KI Health Dashboard ------------------------- */
 .ki-health-section {
     margin-bottom: 12px;
 }
@@ -2914,13 +2914,13 @@ body {
     gap: 6px;
 }
 
-/* ── Keyboard Focus ────────────────────────────── */
+/* -- Keyboard Focus ------------------------------ */
 .session-card.kb-focused {
     outline: 2px solid rgba(212, 175, 67, 0.5);
     outline-offset: -2px;
 }
 
-/* ── Continuity Bar ────────────────────────────── */
+/* -- Continuity Bar ------------------------------ */
 .continuity-bar {
     display: flex;
     align-items: center;
@@ -2944,11 +2944,11 @@ body {
     padding: 2px 8px !important;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   v3.1 — Dashboard Navigation (Interactive Morning Brief)
-   ═══════════════════════════════════════════════════════════════ */
+/* ---------------------------------------------------------------
+   v3.1 � Dashboard Navigation (Interactive Morning Brief)
+   --------------------------------------------------------------- */
 
-/* ── Clickable Action Items ────────────────────────────────── */
+/* -- Clickable Action Items ---------------------------------- */
 .action-item[data-action] {
     cursor: pointer;
     border-radius: 4px;
@@ -2973,7 +2973,7 @@ body {
     opacity: 0.7;
 }
 
-/* ── Clickable Weekly Project Bars ─────────────────────────── */
+/* -- Clickable Weekly Project Bars --------------------------- */
 .weekly-project[data-action] {
     cursor: pointer;
     border-radius: 4px;
@@ -2994,7 +2994,7 @@ body {
     filter: brightness(1.2);
 }
 
-/* ── Clickable Narrative Links ─────────────────────────────── */
+/* -- Clickable Narrative Links ------------------------------- */
 .weekly-narrative .nav-link {
     color: var(--gold-dim, #d4a843);
     cursor: pointer;
@@ -3007,7 +3007,7 @@ body {
     border-bottom-color: var(--gold-dim, #d4a843);
 }
 
-/* ── Clickable Resume Sessions ─────────────────────────────── */
+/* -- Clickable Resume Sessions ------------------------------- */
 .resume-session[data-action] {
     cursor: pointer;
     border-radius: 4px;
@@ -3024,7 +3024,7 @@ body {
     color: var(--gold-dim, #d4a843);
 }
 
-/* ── Clickable Stat Counter ────────────────────────────────── */
+/* -- Clickable Stat Counter ---------------------------------- */
 .morning-stat.clickable {
     cursor: pointer;
     border-radius: 4px;
@@ -3041,7 +3041,7 @@ body {
     color: var(--gold-dim, #d4a843);
 }
 
-/* ── Target Glow Animation ─────────────────────────────────── */
+/* -- Target Glow Animation ----------------------------------- */
 @keyframes target-glow {
     0% { box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.6); }
     40% { box-shadow: 0 0 12px 3px rgba(212, 175, 55, 0.3); }
@@ -3053,7 +3053,7 @@ body {
     border-radius: 8px;
 }
 
-/* ── Breadcrumb Back Pill ──────────────────────────────────── */
+/* -- Breadcrumb Back Pill ------------------------------------ */
 .breadcrumb-back {
     position: sticky;
     top: 0;
@@ -3090,7 +3090,7 @@ body {
     to { opacity: 0; transform: translateY(-10px); }
 }
 
-/* ── Settings Input ──────────────────────────────────────── */
+/* -- Settings Input ---------------------------------------- */
 .setting-input {
     background: var(--bg-card);
     border: 1px solid var(--border);
@@ -3120,7 +3120,7 @@ body {
     color: var(--gold);
 }
 
-/* ── Note Delete + Meta ──────────────────────────────────── */
+/* -- Note Delete + Meta ------------------------------------ */
 .note-item {
     display: flex;
     align-items: center;
@@ -3156,7 +3156,7 @@ body {
     color: var(--red);
 }
 
-/* ── Session Continuity Bar ──────────────────────────────── */
+/* -- Session Continuity Bar -------------------------------- */
 .continuity-bar {
     display: flex;
     align-items: center;
@@ -3182,3 +3182,575 @@ body {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+
+/* ---------------------------------------------------------------
+   VERITAS VAULT � CONSOLIDATED DESIGN PASS v3.1
+   Single file. Applied once to clean git base. No duplicate blocks.
+   
+   Sections:
+   1.  Design tokens
+   2.  Background + titlebar
+   3.  Sidebar
+   4.  Activity heatmap
+   5.  Morning brief
+   6.  Resume card + section spacing (fix #4)
+   7.  Action items (fix #2 support styles)
+   8.  Session cards + source tags (fix #5)
+   9.  Priority badges
+   10. Scrollbar + global typography
+   --------------------------------------------------------------- */
+
+/* -- 1. Design tokens ---------------------------------------- */
+:root {
+    --gold:         #D4AF37;
+    --gold-bright:  #E8C040;
+    --gold-dim:     rgba(212,175,55,0.18);
+    --gold-glow:    rgba(212,175,55,0.35);
+    --bg-base:      #0A0A0C;
+    --bg-card:      rgba(255,255,255,0.025);
+    --border-sub:   rgba(255,255,255,0.06);
+    --text-primary: #E8E8E8;
+    --text-dim:     #5A5550;
+    --text-muted:   #333028;
+    --journal-max:  100%;
+    --transition:   0.15s ease;
+}
+
+/* -- 2. Background + titlebar -------------------------------- */
+body, #app { background: var(--bg-base) !important; }
+.panel, .panel.active { background: rgba(10, 10, 12, 0.88) !important; }
+.titlebar, #titlebar {
+    background: #0D0D10 !important;
+    border-bottom: 1px solid rgba(212,175,55,0.1) !important;
+}
+.app-title {
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    letter-spacing: 2px !important;
+    color: rgba(212,175,55,0.65) !important;
+    text-transform: uppercase !important;
+}
+.panel-inner { max-width: 100% !important; padding: 16px 18px 60px !important; }
+
+/* -- 3. Sidebar ---------------------------------------------- */
+#sidebar {
+    background: linear-gradient(180deg,#0F0F12 0%,#0A0A0C 100%) !important;
+    border-right: 1px solid rgba(255,255,255,0.04) !important;
+}
+.nav-btn {
+    color: #2E2C28 !important;
+    border-left: 2px solid transparent !important;
+    border-radius: 0 6px 6px 0 !important;
+    margin: 2px 6px 2px 0 !important;
+    transition: color var(--transition), background var(--transition), border-color var(--transition) !important;
+}
+.nav-btn:hover:not(.active) {
+    color: #7A756C !important;
+    background: rgba(255,255,255,0.04) !important;
+    border-left-color: rgba(212,175,55,0.22) !important;
+}
+.nav-btn.active {
+    color: var(--gold) !important;
+    background: rgba(212,175,55,0.09) !important;
+    border-left-color: var(--gold) !important;
+    filter: drop-shadow(0 0 4px rgba(212,175,55,0.25)) !important;
+}
+
+/* -- 4. Activity heatmap ------------------------------------- */
+#momentum-section { background: #060607 !important; padding: 12px 0 10px !important; }
+.heat-cell {
+    border-radius: 3px !important;
+    transition: transform 0.12s !important;
+    cursor: default !important;
+}
+.heat-cell:hover { transform: scale(1.35) !important; position: relative !important; z-index: 2 !important; }
+.heat-cell[data-level="0"] { background: rgba(255,255,255,0.03) !important; }
+.heat-cell[data-level="1"] { background: rgba(180,140,20,0.18) !important; }
+.heat-cell[data-level="2"] { background: rgba(200,158,30,0.38) !important; }
+.heat-cell[data-level="3"] { background: rgba(212,175,55,0.65) !important; }
+.heat-cell[data-level="4"] {
+    background: var(--gold-bright) !important;
+    box-shadow: 0 0 7px rgba(212,175,55,0.5) !important;
+    cursor: pointer !important;
+}
+.heat-cell[data-level="1"], .heat-cell[data-level="2"], .heat-cell[data-level="3"] { cursor: pointer !important; }
+#streak-badge, .streak-badge {
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    color: var(--gold) !important;
+}
+/* Month labels (injected by JS) */
+.heatmap-month-row {
+    display: flex !important;
+    padding: 4px 0 0 0 !important;
+    font-size: 8px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.8px !important;
+    text-transform: uppercase !important;
+    color: var(--text-muted) !important;
+    gap: inherit !important;
+}
+.heatmap-month-label {
+    flex: 1 !important;
+    text-align: center !important;
+    color: #2E2C28 !important;
+}
+
+/* -- 5. Morning brief ---------------------------------------- */
+.morning-brief {
+    background: linear-gradient(145deg,rgba(24,22,14,0.96) 0%,rgba(18,18,18,0.98) 60%,rgba(212,175,55,0.04) 100%) !important;
+    border: 1px solid rgba(212,175,55,0.2) !important;
+    border-top: 2px solid var(--gold) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 0 rgba(212,175,55,0.08) inset, 0 20px 50px rgba(0,0,0,0.5) !important;
+    padding: 18px 22px 20px !important;
+}
+.morning-greeting {
+    font-size: 28px !important;
+    font-weight: 200 !important;
+    letter-spacing: -0.8px !important;
+    color: #EAEAEA !important;
+    margin-bottom: 2px !important;
+    line-height: 1.1 !important;
+}
+.morning-greeting strong {
+    font-weight: 900 !important;
+    background: linear-gradient(110deg,#B8962E 0%,#F0CF5A 45%,#D4AF37 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+}
+.morning-sub {
+    font-size: 9.5px !important;
+    font-weight: 600 !important;
+    letter-spacing: 1.5px !important;
+    text-transform: uppercase !important;
+    color: var(--text-dim) !important;
+    margin-bottom: 16px !important;
+}
+.morning-stats { display: grid !important; grid-template-columns: repeat(4,1fr) !important; gap: 6px !important; }
+.morning-stat {
+    padding: 10px 12px 8px !important;
+    background: rgba(255,255,255,0.02) !important;
+    border: 1px solid rgba(255,255,255,0.06) !important;
+    border-radius: 8px !important;
+    font-size: 9px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.8px !important;
+    text-transform: uppercase !important;
+    color: var(--text-dim) !important;
+    transition: border-color var(--transition), background var(--transition) !important;
+    cursor: default !important;
+}
+.morning-stat:hover { border-color: var(--gold-dim) !important; background: rgba(212,175,55,0.03) !important; }
+.morning-stat strong {
+    display: block !important;
+    font-size: 28px !important;
+    font-weight: 700 !important;
+    letter-spacing: -1px !important;
+    line-height: 1 !important;
+    color: #F0F0F0 !important;
+    -webkit-text-fill-color: #F0F0F0 !important;
+    background: none !important;
+    margin-bottom: 4px !important;
+}
+
+/* -- 6. Resume section + section spacing (fix #4) ------------ */
+.resume-card, .pinned-section-inner, .pick-up-card {
+    border: 1px solid rgba(212,175,55,0.1) !important;
+    border-radius: 10px !important;
+    transition: border-color var(--transition), background var(--transition) !important;
+    margin-bottom: 4px !important;
+}
+.resume-card:hover, .pick-up-card:hover {
+    border-color: rgba(212,175,55,0.22) !important;
+    background: rgba(212,175,55,0.02) !important;
+}
+/* Gap between resume section and action items */
+.action-items-panel { margin-top: 24px !important; padding-top: 20px !important; border-top: 1px solid rgba(255,255,255,0.05) !important; }
+.action-items-header {
+    font-size: 9px !important;
+    font-weight: 800 !important;
+    letter-spacing: 2px !important;
+    text-transform: uppercase !important;
+    color: #2E2C28 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin-bottom: 10px !important;
+}
+.action-count {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: var(--gold-dim) !important;
+    color: var(--gold) !important;
+    border-radius: 20px !important;
+    padding: 1px 8px !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0 !important;
+}
+
+/* -- 7. Action items (fold support styles) ------------------- */
+.action-item {
+    display: flex !important;
+    align-items: baseline !important;
+    gap: 10px !important;
+    padding: 8px 10px !important;
+    border-radius: 7px !important;
+    border: 1px solid transparent !important;
+    margin-bottom: 2px !important;
+    transition: background var(--transition), border-color var(--transition) !important;
+}
+.action-item:hover { background: rgba(255,255,255,0.02) !important; border-color: var(--border-sub) !important; }
+.action-item.vv-hidden { display: none !important; }
+.action-desc { font-size: 12.5px !important; color: #BDBDBD !important; line-height: 1.45 !important; flex: 1 !important; }
+.action-icon { flex-shrink: 0 !important; }
+.action-priority {
+    font-size: 8.5px !important;
+    font-weight: 800 !important;
+    letter-spacing: 1.2px !important;
+    padding: 2px 7px !important;
+    border-radius: 4px !important;
+    flex-shrink: 0 !important;
+    text-transform: uppercase !important;
+}
+/* Priority colours */
+.action-item[data-priority-class="HIGH"] .action-priority,
+.action-priority.HIGH  { color: #FF6B6B !important; background: rgba(220,60,60,0.12) !important; }
+.action-item[data-priority-class="MEDIUM"] .action-priority,
+.action-priority.MEDIUM { color: #C9A030 !important; background: rgba(212,175,55,0.1) !important; }
+.action-item[data-priority-class="LOW"] .action-priority,
+.action-priority.LOW   { color: #4A4540 !important; }
+
+/* Show-more button */
+#action-show-more {
+    display: block !important;
+    width: 100% !important;
+    margin-top: 8px !important;
+    padding: 8px !important;
+    background: transparent !important;
+    border: 1px solid rgba(255,255,255,0.06) !important;
+    border-radius: 7px !important;
+    color: #4A4540 !important;
+    font-size: 10.5px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.5px !important;
+    cursor: pointer !important;
+    transition: border-color var(--transition), color var(--transition), background var(--transition) !important;
+    text-align: center !important;
+}
+#action-show-more:hover {
+    border-color: var(--gold-dim) !important;
+    color: var(--gold) !important;
+    background: rgba(212,175,55,0.04) !important;
+}
+
+/* -- 8. Session cards + source tags (fix #5) ----------------- */
+.session-card {
+    border: 1px solid rgba(255,255,255,0.055) !important;
+    border-radius: 10px !important;
+    margin-bottom: 6px !important;
+    transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition) !important;
+    overflow: hidden !important;
+}
+.session-card:hover {
+    border-color: rgba(212,175,55,0.18) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 22px rgba(0,0,0,0.38) !important;
+}
+.session-title { font-size: 13px !important; font-weight: 650 !important; color: #E8E8E8 !important; line-height: 1.35 !important; }
+.session-desc, .session-preview { font-size: 11.5px !important; color: #4A4540 !important; line-height: 1.5 !important; }
+/* Source badge � fixed width, right-aligned (fix #5) */
+.source-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 52px !important;
+    padding: 2px 7px !important;
+    border-radius: 4px !important;
+    font-size: 8px !important;
+    font-weight: 800 !important;
+    letter-spacing: 1px !important;
+    text-transform: uppercase !important;
+    text-align: center !important;
+    flex-shrink: 0 !important;
+}
+.source-group-header {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+.source-group-count {
+    flex: 1 !important;
+    font-size: 10.5px !important;
+    color: var(--text-dim) !important;
+}
+.source-group-chevron {
+    margin-left: auto !important;
+    flex-shrink: 0 !important;
+    color: var(--text-dim) !important;
+    font-size: 10px !important;
+}
+
+/* -- 9. Priority badges (standalone) ------------------------ */
+.badge-high, [class*="priority-high"] {
+    background: rgba(220,60,60,0.12) !important;
+    color: #FF6B6B !important;
+    border: 1px solid rgba(220,60,60,0.2) !important;
+}
+.badge-medium, [class*="priority-medium"] {
+    background: rgba(212,175,55,0.1) !important;
+    color: #C9A030 !important;
+    border: 1px solid rgba(212,175,55,0.18) !important;
+}
+.badge-low, [class*="priority-low"] {
+    background: rgba(100,100,100,0.08) !important;
+    color: #4A4540 !important;
+}
+
+/* Status pill */
+.status-pill {
+    font-size: 10px !important; font-weight: 600 !important;
+    border-radius: 20px !important; padding: 3px 10px 3px 7px !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+}
+.status-dot { width: 6px !important; height: 6px !important; border-radius: 50% !important; }
+.status-dot.active {
+    background: #4ADE80 !important;
+    box-shadow: 0 0 5px rgba(74,222,128,0.6) !important;
+    animation: vv-pulse-green 2s ease-in-out infinite !important;
+}
+@keyframes vv-pulse-green {
+    0%,100% { opacity:1; box-shadow: 0 0 5px rgba(74,222,128,0.6); }
+    50%      { opacity:0.6; box-shadow: 0 0 9px rgba(74,222,128,0.3); }
+}
+
+/* Day headers */
+.day-header, .journal-date-header {
+    font-size: 9px !important;
+    font-weight: 800 !important;
+    letter-spacing: 2px !important;
+    text-transform: uppercase !important;
+    color: #252320 !important;
+    padding: 18px 0 8px !important;
+    border-bottom: 1px solid rgba(255,255,255,0.04) !important;
+    margin-bottom: 8px !important;
+}
+
+/* -- 10. Scrollbar + global typography ----------------------- */
+body { -webkit-font-smoothing: antialiased !important; text-rendering: optimizeLegibility !important; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(212,175,55,0.22); }
+/* Tooltip element */
+#heat-tip { font-family: inherit !important; }
+
+/* END CONSOLIDATED v3.1 */
+body::before {
+    content: 'Ω';
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(calc(-50% + 75px), -50%);
+    width: 70vh;
+    height: 70vh;
+    font-size: 65vh;
+    font-weight: 100;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    color: rgba(212, 175, 55, 0.45);
+    line-height: 1;
+    user-select: none;
+    animation: omega-breathe 20s ease-in-out infinite;
+    z-index: 0;
+    pointer-events: none;
+}
+@keyframes omega-breathe {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.95; }
+}
+.app-container {
+    position: relative;
+    z-index: 1;
+}
+
+/* ── NAEF Telemetry Health Strip ────────────────────────────── */
+.titlebar-telemetry {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 12px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.telem-dot {
+    font-size: 8px;
+    line-height: 1;
+    cursor: default;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+    color: var(--text-dim, #555);  /* default: unknown/loading */
+    position: relative;
+}
+
+.telem-dot[data-status="online"] {
+    color: #4ADE80;
+    text-shadow: 0 0 6px rgba(74, 222, 128, 0.5);
+}
+
+.telem-dot[data-status="degraded"] {
+    color: #FBBF24;
+    text-shadow: 0 0 6px rgba(251, 191, 36, 0.5);
+    animation: telem-pulse 2s infinite;
+}
+
+.telem-dot[data-status="offline"] {
+    color: #F87171;
+    text-shadow: 0 0 6px rgba(248, 113, 113, 0.5);
+}
+
+@keyframes telem-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+/* Hover label */
+.telem-dot::after {
+    content: attr(data-label);
+    position: absolute;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    color: var(--text-muted);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 6px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+    z-index: 100;
+}
+
+.telem-dot:hover::after {
+    opacity: 1;
+}
+
+/* ═══ Project Workspaces ═══ */
+.projects-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.btn-new-project {
+    background: linear-gradient(135deg, #D4AF37, #B8962E);
+    color: #0D0D0D; border: none; border-radius: 6px;
+    padding: 6px 14px; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+}
+.btn-new-project:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(212,175,55,0.3); }
+.projects-list { display: flex; flex-direction: column; gap: 10px; }
+.project-card {
+    background: rgba(255,255,255,0.04); border-radius: 8px;
+    padding: 14px 16px; cursor: pointer; position: relative;
+    transition: all 0.2s; border: 1px solid rgba(255,255,255,0.06);
+}
+.project-card:hover { background: rgba(255,255,255,0.07); transform: translateX(2px); }
+.project-card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.project-icon { font-size: 18px; }
+.project-name { font-weight: 600; color: #f0f0f0; font-size: 14px; flex: 1; }
+.project-badges { display: flex; gap: 4px; }
+.project-card-meta { display: flex; gap: 16px; font-size: 11px; color: rgba(255,255,255,0.45); }
+.project-card-desc { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 6px; line-height: 1.4; }
+.btn-delete-project {
+    position: absolute; top: 8px; right: 8px; background: none;
+    border: none; color: rgba(255,255,255,0.2); font-size: 18px;
+    cursor: pointer; opacity: 0; transition: all 0.2s; padding: 2px 6px;
+}
+.project-card:hover .btn-delete-project { opacity: 1; }
+.btn-delete-project:hover { color: #E74C3C; }
+.project-detail-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.btn-back-projects {
+    background: rgba(255,255,255,0.08); border: none; border-radius: 4px;
+    color: #ccc; padding: 4px 10px; font-size: 12px; cursor: pointer;
+}
+.btn-back-projects:hover { background: rgba(255,255,255,0.15); }
+.project-detail-name { flex: 1; font-size: 18px; color: #D4AF37; margin: 0; }
+.project-timeline { display: flex; flex-direction: column; gap: 8px; }
+.project-session-card {
+    background: rgba(255,255,255,0.04); border-radius: 6px;
+    padding: 12px 14px; border: 1px solid rgba(255,255,255,0.06);
+    transition: all 0.2s;
+}
+.project-session-card:hover { background: rgba(255,255,255,0.07); }
+.project-session-header { display: flex; align-items: center; gap: 8px; }
+.project-session-title { flex: 1; font-weight: 500; font-size: 13px; color: #e0e0e0; }
+.project-session-date { font-size: 11px; color: rgba(255,255,255,0.4); }
+.project-session-summary { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 6px; line-height: 1.4; }
+.project-session-artifacts { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 4px; }
+.btn-unlink {
+    background: none; border: none; color: rgba(255,255,255,0.2);
+    font-size: 16px; cursor: pointer; padding: 2px 6px;
+}
+.btn-unlink:hover { color: #E74C3C; }
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7); z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(4px);
+}
+.modal-content {
+    background: #1a1a1a; border: 1px solid rgba(212,175,55,0.3);
+    border-radius: 12px; padding: 24px; width: 380px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+.modal-title { color: #D4AF37; margin: 0 0 16px 0; font-size: 18px; }
+.modal-input {
+    width: 100%; background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;
+    padding: 10px 12px; color: #f0f0f0; font-size: 14px;
+    margin-bottom: 12px; box-sizing: border-box;
+}
+.modal-input:focus { border-color: #D4AF37; outline: none; }
+.modal-input::placeholder { color: rgba(255,255,255,0.3); }
+.modal-colors { display: flex; gap: 8px; margin-bottom: 16px; }
+.color-swatch {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 2px solid transparent; cursor: pointer;
+    transition: all 0.2s;
+}
+.color-swatch.active { border-color: #fff; transform: scale(1.15); }
+.color-swatch:hover { transform: scale(1.1); }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.btn-modal-cancel {
+    background: rgba(255,255,255,0.08); border: none; border-radius: 6px;
+    padding: 8px 16px; color: #ccc; cursor: pointer; font-size: 13px;
+}
+.btn-modal-cancel:hover { background: rgba(255,255,255,0.15); }
+.btn-modal-create {
+    background: linear-gradient(135deg, #D4AF37, #B8962E);
+    border: none; border-radius: 6px; padding: 8px 20px;
+    color: #0D0D0D; font-weight: 600; cursor: pointer; font-size: 13px;
+}
+.btn-modal-create:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(212,175,55,0.3); }
+.btn-add-to-project {
+    background: rgba(212,175,55,0.15); border: 1px solid rgba(212,175,55,0.3);
+    border-radius: 4px; padding: 3px 8px; font-size: 11px;
+    color: #D4AF37; cursor: pointer; transition: all 0.2s;
+}
+.btn-add-to-project:hover { background: rgba(212,175,55,0.3); }
+
+/* Projects sub-tabs */
+.projects-tabs { display: flex; gap: 2px; margin-bottom: 14px; background: rgba(255,255,255,0.03); border-radius: 6px; padding: 3px; }
+.projects-tab {
+    flex: 1; padding: 6px 10px; background: none; border: none;
+    color: rgba(255,255,255,0.45); font-size: 12px; font-weight: 500;
+    cursor: pointer; border-radius: 4px; transition: all 0.2s;
+}
+.projects-tab:hover { color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.05); }
+.projects-tab.active { background: rgba(212,175,55,0.2); color: #D4AF37; }

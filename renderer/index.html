@@ -17,9 +17,15 @@
     <!-- ═══ Titlebar ═══ -->
     <div id="titlebar">
         <div class="titlebar-left">
-            <span class="titlebar-icon">🏛</span>
+            <span class="titlebar-icon">Ω</span>
             <span class="titlebar-title">VERITAS VAULT</span>
-            <span class="titlebar-version">v3.0</span>
+            <span class="titlebar-version">v3.6</span>
+        </div>
+        <div class="titlebar-telemetry" id="telemetry-strip" title="Subsystem Health">
+            <span class="telem-dot" id="telem-db" data-label="SQLite" title="Database">●</span>
+            <span class="telem-dot" id="telem-ollama" data-label="Ollama" title="AI Engine">●</span>
+            <span class="telem-dot" id="telem-capture" data-label="Capture" title="Capture Server">●</span>
+            <span class="telem-dot" id="telem-watcher" data-label="Watcher" title="File Watcher">●</span>
         </div>
         <div class="titlebar-center">
             <div id="status-pill" class="status-pill">
@@ -55,10 +61,9 @@
                         <path d="m21 21-4.35-4.35" />
                     </svg>
                 </button>
-                <button class="nav-btn" data-panel="threads" title="Project Threads" aria-label="Project Threads">
+                <button class="nav-btn" data-panel="projects" title="Projects" aria-label="Projects">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                        <path
-                            d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2" />
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
                     </svg>
                 </button>
                 <button class="nav-btn" data-panel="tasks" title="Open Tasks" aria-label="Open Tasks">
@@ -143,19 +148,42 @@
                 </div>
             </section>
 
-            <!-- ═══ Threads Panel ═══ -->
-            <section id="panel-threads" class="panel">
+            <!-- ═══ Projects Panel ═══ -->
+            <section id="panel-projects" class="panel">
                 <div class="panel-inner">
-                    <h2 class="panel-title">Project Threads</h2>
-                    <div class="ki-health-section">
-                        <button class="ki-health-toggle" id="ki-health-toggle" data-action="toggle-ki-health">📊 Show KI Health</button>
-                        <div id="ki-health-panel" style="display:none"></div>
+                    <div class="projects-header">
+                        <h2 class="panel-title">Projects</h2>
+                        <button class="btn-new-project" id="btn-new-project" data-action="new-project">+ New Project</button>
                     </div>
-                    <div id="threads-list" class="threads-list">
+                    <div class="projects-tabs">
+                        <button class="projects-tab active" data-action="show-projects-tab" data-tab="workspaces">Workspaces</button>
+                        <button class="projects-tab" data-action="show-projects-tab" data-tab="threads">KI Threads</button>
+                        <button class="projects-tab" data-action="show-projects-tab" data-tab="health">KI Health</button>
+                    </div>
+                    <div id="projects-list" class="projects-list">
                         <div class="empty-state">
-                            <div class="empty-icon">🧵</div>
-                            <div class="empty-text">Loading threads…</div>
+                            <div class="empty-icon">📂</div>
+                            <div class="empty-text">Create a project to group sessions across models</div>
                         </div>
+                    </div>
+                    <div id="projects-threads-section" style="display:none">
+                        <div id="threads-list" class="threads-list">
+                            <div class="empty-state">
+                                <div class="empty-icon">🧵</div>
+                                <div class="empty-text">Loading threads…</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="projects-health-section" style="display:none">
+                        <div id="ki-health-panel"></div>
+                    </div>
+                    <div id="project-detail-view" class="project-detail-view" style="display:none">
+                        <div class="project-detail-header">
+                            <button class="btn-back-projects" data-action="back-to-projects">← Back</button>
+                            <h3 id="project-detail-name" class="project-detail-name"></h3>
+                            <div id="project-detail-badges" class="project-detail-badges"></div>
+                        </div>
+                        <div id="project-timeline" class="project-timeline"></div>
                     </div>
                 </div>
             </section>
@@ -258,7 +286,7 @@
                     </div>
                     <div id="chat-messages" class="chat-messages">
                         <div class="chat-welcome">
-                            <div class="chat-welcome-icon">🏛</div>
+                            <div class="chat-welcome-icon">Ω</div>
                             <div class="chat-welcome-title">What do you want to know?</div>
                             <div class="chat-welcome-sub">Ask anything about your captured sessions, audits, projects, and knowledge items.</div>
                             <div class="chat-suggestions">
@@ -338,6 +366,27 @@
     <script src="lib/marked.min.js"></script>
     <script src="lib/highlight.min.js"></script>
     <script src="app.js"></script>
+
+    <!-- New Project Modal -->
+    <div id="new-project-modal" class="modal-overlay" style="display:none">
+        <div class="modal-content">
+            <h3 class="modal-title">New Project</h3>
+            <input type="text" id="new-project-name" class="modal-input" placeholder="Project name (e.g. OmegaWallet)" />
+            <input type="text" id="new-project-desc" class="modal-input" placeholder="Description (optional)" />
+            <div class="modal-colors">
+                <button class="color-swatch active" data-color="#D4AF37" style="background:#D4AF37" title="Gold"></button>
+                <button class="color-swatch" data-color="#10A37F" style="background:#10A37F" title="Green"></button>
+                <button class="color-swatch" data-color="#4285F4" style="background:#4285F4" title="Blue"></button>
+                <button class="color-swatch" data-color="#E74C3C" style="background:#E74C3C" title="Red"></button>
+                <button class="color-swatch" data-color="#9B59B6" style="background:#9B59B6" title="Purple"></button>
+                <button class="color-swatch" data-color="#F39C12" style="background:#F39C12" title="Orange"></button>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-modal-cancel" data-action="close-project-modal">Cancel</button>
+                <button class="btn-modal-create" data-action="create-project">Create</button>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

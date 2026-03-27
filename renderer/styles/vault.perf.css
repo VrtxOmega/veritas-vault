@@ -1,0 +1,87 @@
+
+/* ═══════════════════════════════════════════════════════════════
+   VERITAS VAULT v3.1 — PERFORMANCE LAYER
+   GPU compositor hints, scroll perf, layout containment.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Promote scrollable areas to their own compositor layer */
+.journal-scroll,
+.panel-inner,
+#panel-journal {
+    will-change: transform;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Constrain layout reflow to individual cards */
+.session-card,
+.day-card,
+.ki-health-card,
+.thread-card {
+    contain: layout style;
+}
+
+/* GPU-accelerate animated elements */
+.session-card,
+.nav-btn,
+.morning-brief,
+.btn-gold,
+.status-dot,
+#scroll-top-btn {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+/* Smoother transitions with GPU-friendly properties only (no box-shadow in transitions) */
+.session-card {
+    transition: transform var(--transition), opacity 0.2s ease !important;
+}
+.session-card:hover {
+    box-shadow: var(--shadow-md) !important;
+}
+
+/* Font rendering — crispest text */
+body, .panel-inner, .journal-scroll {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+.mono, code, pre, .ki-health-title {
+    -webkit-font-smoothing: subpixel-antialiased;
+}
+
+/* Reduce paint on sidebar (static element) */
+#sidebar {
+    contain: layout style paint;
+}
+
+/* Faster modal open — use opacity + visibility instead of display */
+#quick-capture-overlay {
+    visibility: hidden;
+    opacity: 0;
+    display: flex !important;
+    transition: opacity 0.15s ease, visibility 0.15s;
+    pointer-events: none;
+}
+#quick-capture-overlay.open {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Smooth scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+    transition: background 0.2s;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* END Performance Layer */

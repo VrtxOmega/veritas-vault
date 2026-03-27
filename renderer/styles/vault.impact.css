@@ -1,0 +1,203 @@
+
+/* ═══════════════════════════════════════════════════════════════
+   VERITAS VAULT v3.1b — HIGH-CONTRAST VISUAL IMPACT PASS
+   Overrides subtle rules with visible, dramatic styling.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Morning Brief: unmistakable premium card ── */
+.morning-brief {
+    background: linear-gradient(160deg,
+        #1c1a14 0%,
+        #1a1a1a 40%,
+        rgba(212, 175, 55, 0.07) 100%) !important;
+    border: 1px solid rgba(212, 175, 55, 0.35) !important;
+    box-shadow:
+        0 0 0 1px rgba(212, 175, 55, 0.1),
+        0 8px 32px rgba(0, 0, 0, 0.6),
+        0 0 60px rgba(212, 175, 55, 0.06) !important;
+    padding: 24px 28px 20px !important;
+    margin-bottom: 20px !important;
+}
+.morning-brief::before {
+    height: 3px !important;
+    background: linear-gradient(90deg,
+        #D4AF37 0%,
+        #f0d060 35%,
+        rgba(212, 175, 55, 0.4) 70%,
+        transparent 100%) !important;
+    box-shadow: 0 0 16px rgba(212, 175, 55, 0.5) !important;
+    opacity: 1 !important;
+}
+
+/* ── Morning Greeting: big gradient gold ── */
+.morning-greeting {
+    font-size: 28px !important;
+    font-weight: 200 !important;
+    letter-spacing: -0.8px !important;
+    line-height: 1.15 !important;
+    color: #E8E8E8 !important;
+    margin-bottom: 4px !important;
+}
+.morning-greeting strong {
+    font-weight: 800 !important;
+    background: linear-gradient(120deg, #D4AF37 0%, #F5D070 50%, #C9A227 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+}
+.morning-sub {
+    font-size: 11.5px !important;
+    color: #7A756C !important;
+    letter-spacing: 0.4px !important;
+    margin-bottom: 18px !important;
+    text-transform: uppercase !important;
+}
+
+/* ── Morning Stats: visible pill boxes ── */
+.morning-stats {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 8px !important;
+    margin-bottom: 2px !important;
+}
+.morning-stat {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 3px !important;
+    padding: 10px 14px !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(212, 175, 55, 0.2) !important;
+    border-radius: 8px !important;
+    font-size: 10px !important;
+    font-weight: 500 !important;
+    color: #8A8278 !important;
+    letter-spacing: 0.4px !important;
+    text-transform: uppercase !important;
+    transition: border-color 0.2s, background 0.2s !important;
+    cursor: default !important;
+}
+.morning-stat:hover {
+    background: rgba(212, 175, 55, 0.07) !important;
+    border-color: rgba(212, 175, 55, 0.4) !important;
+}
+.morning-stat strong {
+    display: block !important;
+    font-size: 24px !important;
+    font-weight: 700 !important;
+    color: #F0F0F0 !important;
+    line-height: 1.1 !important;
+    letter-spacing: -0.8px !important;
+    -webkit-text-fill-color: #F0F0F0 !important;
+    background: none !important;
+}
+
+/* ── Sidebar: more visible active left-bar ── */
+.nav-btn {
+    position: relative !important;
+    border-left: 3px solid transparent !important;
+    border-radius: 0 8px 8px 0 !important;
+    margin: 1px 0 !important;
+    width: 44px !important;
+    height: 42px !important;
+    transition: color 0.2s, background 0.2s, border-color 0.2s !important;
+}
+.nav-btn:hover {
+    color: #E8E8E8 !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-left-color: rgba(212, 175, 55, 0.4) !important;
+}
+.nav-btn.active {
+    color: #D4AF37 !important;
+    background: rgba(212, 175, 55, 0.1) !important;
+    border-left-color: #D4AF37 !important;
+}
+
+/* ── Session cards: tighter, more premium ── */
+.session-card {
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: 10px !important;
+    margin-bottom: 8px !important;
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s !important;
+}
+.session-card:hover {
+    border-color: rgba(212, 175, 55, 0.25) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* ── Day header: tighter and more refined ── */
+.day-card {
+    margin-bottom: 20px !important;
+}
+.day-header {
+    font-size: 10px !important;
+    letter-spacing: 1.2px !important;
+    text-transform: uppercase !important;
+    color: #5A5550 !important;
+    padding-bottom: 8px !important;
+    margin-bottom: 10px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+/* ── Status pill: more defined ── */
+.status-pill {
+    border: 1px solid rgba(212, 175, 55, 0.2) !important;
+    border-radius: 20px !important;
+    padding: 3px 12px 3px 8px !important;
+    font-size: 10.5px !important;
+    letter-spacing: 0.2px !important;
+}
+.status-pill.capturing {
+    border-color: rgba(74, 222, 128, 0.35) !important;
+    background: rgba(74, 222, 128, 0.06) !important;
+}
+
+/* ── KI Health cards ── */
+.ki-health-card {
+    border-radius: 10px !important;
+    transition: transform 0.2s, box-shadow 0.2s !important;
+}
+.ki-health-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* ── Action items: tighter ── */
+.action-item {
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
+    margin-bottom: 4px !important;
+    border: 1px solid transparent !important;
+    transition: background 0.15s, border-color 0.15s !important;
+}
+.action-item:hover {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* ── Resume section ── */
+.resume-card {
+    border: 1px solid rgba(212, 175, 55, 0.15) !important;
+    border-radius: 10px !important;
+    transition: border-color 0.2s !important;
+}
+.resume-card:hover {
+    border-color: rgba(212, 175, 55, 0.3) !important;
+}
+
+/* ── Panel inner: tighter padding ── */
+.panel-inner {
+    padding: 20px 24px 60px !important;
+}
+
+/* ── Section headers (Action Items, etc) ── */
+.section-header, .momentum-label, h2 {
+    font-size: 10px !important;
+    letter-spacing: 1.5px !important;
+    text-transform: uppercase !important;
+    color: #5A5550 !important;
+    font-weight: 700 !important;
+}
+
+/* END v3.1b Impact Pass */

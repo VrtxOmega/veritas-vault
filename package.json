@@ -1,6 +1,6 @@
 {
     "name": "veritas-vault",
-    "version": "3.0.0",
+    "version": "3.6.0",
     "description": "Veritas Vault — Background-listening, auto-organizing AI interaction notebook",
     "main": "main.js",
     "scripts": {
@@ -12,11 +12,10 @@
     "author": "RJ Lopez",
     "license": "BSL-1.1",
     "dependencies": {
+        "better-sqlite3": "^12.8.0",
         "chokidar": "^4.0.3",
         "highlight.js": "^11.11.1",
-        "marked": "^17.0.4",
-        "minisearch": "^7.2.0",
-        "sql.js": "^1.11.0"
+        "marked": "^17.0.4"
     },
     "devDependencies": {
         "electron": "^34.2.0",
@@ -52,7 +51,8 @@
             "launch.js",
             "preload.js",
             "renderer/**/*",
-            "veritas_vault.ico"
+            "veritas_vault.ico",
+            "veritas_vault_icon.png"
         ],
         "compression": "normal",
         "npmRebuild": true

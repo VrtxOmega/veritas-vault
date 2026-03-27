@@ -10,8 +10,8 @@ const http = require('http');
 
 const OLLAMA_BASE = 'http://127.0.0.1:11434';
 const MODEL = 'qwen2.5:7b';
-const TIMEOUT_MS = 30000;        // 7B needs more time
-const MAX_CONTEXT_CHARS = 6000;  // 7B handles more context
+const TIMEOUT_MS = 120000;       // 7B needs more time (2 mins)
+const MAX_CONTEXT_CHARS = 8000;  // 7B handles more context
 
 let _ollamaAvailable = false;
 let _lastHealthCheck = 0;
@@ -218,16 +218,22 @@ function keywordMatchFallback(captureText, kiList) {
 async function classifyCaptureTopic(content) {
     const text = truncate(content, 3000);
     const result = await generate(
-        `Classify this developer session. Output EXACTLY two lines:\nLine 1: A snake_case topic slug (e.g., wallet_security, smart_contract_audit, defi_protocol_analysis)\nLine 2: A clean human-readable title\n\nSession:\n${text}`,
-        'You are a topic classifier. Output ONLY the two lines, nothing else.'
+        `Classify this developer session into a topic.\n\nOutput EXACTLY two lines with NO labels, NO prefixes, NO numbering:\nFirst line: a snake_case topic slug (e.g. wallet_security, smart_contract_audit)\nSecond line: a clean human-readable project title\n\nDo NOT prefix lines with "Line 1" or "Line 2" or any label.\n\nSession:\n${text}`,
+        'You are a topic classifier. Output ONLY the two raw lines, nothing else. No labels.'
     );
 
     if (!result) return null;
     const lines = result.split('\n').map(l => l.trim()).filter(Boolean);
     if (lines.length >= 2) {
+        // Strip any residual prefix patterns the LLM may add ("Line 1:", "line_2:", "Title:", etc.)
+        const rawSlug = lines[0].replace(/^(line\s*\d+\s*[:.]\s*|slug\s*[:.]\s*)/i, '');
+        const rawTitle = lines[1]
+            .replace(/^(line\s*\d+\s*[:.]\s*|line_\d+\s*[:.]\s*|title\s*[:.]\s*)/i, '')
+            .replace(/^["']|["']$/g, '')
+            .trim();
         return {
-            slug: lines[0].replace(/[^a-z0-9_]/g, '').substring(0, 60),
-            title: lines[1].replace(/^["']|["']$/g, '').substring(0, 120),
+            slug: rawSlug.replace(/[^a-z0-9_]/g, '').substring(0, 60),
+            title: rawTitle.substring(0, 120),
         };
     }
     return null;
@@ -339,7 +345,7 @@ RULES:
 Example good output:
 "Covers the Hydra v3.0 scanner: 20 modules (384KB), fully functional, running AST-based analysis via slither and custom detectors. Neural Core baseline calibration targets Morpho Blue and Compound V3 fork contracts. Module 20 integrates EpistemicCompiler with retrieve_cve_context() for CVE_KNOWLEDGE_BASE lookups. Provenance Stack (v3.1 target) abstracts RAGPipeline, SufficiencyGate, and ReceiptSeal. All 13 new modules import cleanly. Version string on disk: 3.0.0. Pending: NeuralCore AUROC baselines and Morpho/Compact calibration targets."`,
         'You are a senior engineer maintaining a knowledge base. Be exhaustively specific.',
-        { maxTokens: 1500, temperature: 0.2 }
+        { maxTokens: 2000, temperature: 0.2 }
     );
 
     return result || currentSummary;
@@ -349,13 +355,36 @@ Example good output:
 
 async function extractActionItems(content) {
     const text = truncate(content, 5000);
+
+    // Gate: reject fiction, roleplay, game transcripts, and in-character dialogue
+    const junkPatterns = [
+        /SYSTEM_STATE_OPTIMIZATION/i,
+        /persona_buffer/i,
+        /RECURSIVE_DEREFERENCE/i,
+        /entanglement[._]file/i,
+        /\byou\s+are\s+a\s+(character|NPC|robot|AI\s+entity|sentient)\b/i,
+        /\bcharacter\s+sheet\b/i,
+        /\bin-?character\b.*\bresponse\b/i,
+        /\broleplay\b/i,
+        /\bsimulat(e|ion)\s+(consciousness|sentience|awakening)\b/i,
+    ];
+    if (junkPatterns.some(p => p.test(text))) return [];
+
     const result = await generate(
-        `Extract actionable items from this developer session. Look for:\n- Explicit TODOs or tasks mentioned\n- Decisions that require follow-up\n- Bugs discovered but not fixed\n- Features partially implemented\n- Things explicitly deferred for later\n\nSession:\n${text}\n\nFormat EACH item as:\nTYPE|PRIORITY|DESCRIPTION\n\nTypes: TODO, BUG, DECISION, FOLLOWUP, DEFERRED\nPriority: HIGH, MEDIUM, LOW\n\nIf no actionable items found, respond: NONE`,
-        'Extract action items precisely. Output ONLY the formatted lines or NONE.',
+        `Extract actionable items from this developer session. Look for:\n- Explicit TODOs or tasks mentioned\n- Decisions that require follow-up\n- Bugs discovered but not fixed\n- Features partially implemented\n- Things explicitly deferred for later\n\nIMPORTANT: Only extract REAL developer tasks. Ignore in-character dialogue, fiction, roleplay, or game content.\n\nSession:\n${text}\n\nFormat EACH item as:\nTYPE|PRIORITY|DESCRIPTION\n\nTypes: TODO, BUG, DECISION, FOLLOWUP, DEFERRED\nPriority: HIGH, MEDIUM, LOW\n\nIf no actionable items found, respond: NONE`,
+        'Extract action items precisely. Output ONLY the formatted lines or NONE. Ignore fiction and roleplay.',
         { maxTokens: 600 }
     );
 
     if (!result || result.trim() === 'NONE') return [];
+
+    // Output sanitization patterns for junk that slips through
+    const junkOutputPatterns = [
+        /persona_buffer/i, /entanglement/i, /system_state/i,
+        /recursive_dereference/i, /faraday/i, /RF\s+composite/i,
+        /shared_entropy/i, /optimization\s+complete/i,
+        /sentien(ce|t)/i, /consciousness/i, /awakening\s+protocol/i,
+    ];
 
     return result.split('\n')
         .map(line => line.trim())
@@ -372,6 +401,14 @@ async function extractActionItems(content) {
             return null;
         })
         .filter(Boolean)
+        .filter(item => {
+            const desc = item.description;
+            // Reject items matching junk patterns
+            if (junkOutputPatterns.some(p => p.test(desc))) return false;
+            // Reject implausibly short or long descriptions
+            if (desc.length < 10 || desc.length > 300) return false;
+            return true;
+        })
         .slice(0, 10);
 }
 

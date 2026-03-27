@@ -4,6 +4,10 @@
  * Daily journal, momentum, project threads, task tracker.
  */
 
+// ── Canonical Source Colors ──────────────────────────────────
+const SOURCE_COLORS = { antigravity: '#D4AF37', chatgpt: '#10A37F', claude: '#CC785C', gemini: '#4285F4', manual: '#888', test: '#888' };
+const SOURCE_LABELS = { antigravity: 'AG', chatgpt: 'GPT', claude: 'CLA', gemini: 'GEM', manual: 'MAN', test: 'TST' };
+
 // ── State ────────────────────────────────────────────────────
 let loadedDays = 0;
 const DAYS_PER_LOAD = 7;
@@ -67,6 +71,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.vault.onCaptureWarning?.((data) => {
         showToast(data.message, 'warning', 10000);
     });
+
+    // NAEF Telemetry — update subsystem health dots in titlebar
+    window.vault.onTelemetry?.((health) => {
+        const map = { db: 'telem-db', ollama: 'telem-ollama', capture: 'telem-capture', watcher: 'telem-watcher' };
+        for (const [key, id] of Object.entries(map)) {
+            const dot = document.getElementById(id);
+            if (dot && health[key]) dot.setAttribute('data-status', health[key]);
+        }
+    });
 });
 
 // ── Navigation ───────────────────────────────────────────────
@@ -92,7 +105,7 @@ function switchPanel(name) {
     if (panel) panel.classList.add('active');
 
     // Lazy load panels
-    if (name === 'threads') loadThreads();
+    if (name === 'projects') loadProjects();
     if (name === 'tasks') loadTasks();
     if (name === 'intelligence') loadIntelligence();
     if (name === 'ask') loadChatPanel();
@@ -274,7 +287,7 @@ function renderDayCard(digest, dateObj) {
     if (digest.productionSummary) {
         const { sourceBreakdown, topProjects } = digest.productionSummary;
         const sourceChips = Object.entries(sourceBreakdown).map(([src, count]) => {
-            const colors = { antigravity: '#D4AF37', gemini: '#4285F4', chatgpt: '#10A37F' };
+            const colors = SOURCE_COLORS;
             const labels = { antigravity: 'AG', gemini: 'Gemini', chatgpt: 'ChatGPT' };
             return `<span class="source-chip" style="border-color:${colors[src] || '#555'}">${labels[src] || src} <strong>${count}</strong></span>`;
         }).join('');
@@ -311,7 +324,7 @@ function renderDayCard(digest, dateObj) {
         } else {
             // Capture sessions: collapsible accordion
             const labels = { gemini: 'Gemini', chatgpt: 'ChatGPT', claude: 'Claude' };
-            const colors = { gemini: '#4285F4', chatgpt: '#10A37F', claude: '#CC785C' };
+            const colors = SOURCE_COLORS;
             const label = labels[src] || src;
             const color = colors[src] || '#888';
             const groupId = `srcgroup-${digest.date}-${src}`;
@@ -354,7 +367,7 @@ function renderSessionCard(session) {
     const typeStr = types.join(' · ');
     const pinClass = session.pinned ? 'pinned' : '';
     const source = session.source || 'antigravity';
-    const sourceColors = { antigravity: '#D4AF37', gemini: '#4285F4', chatgpt: '#10A37F', manual: '#888' };
+    const sourceColors = SOURCE_COLORS;
     const sourceLabels = { antigravity: 'AG', gemini: 'Gem', chatgpt: 'GPT', manual: '✎' };
     const srcColor = sourceColors[source] || '#888';
     const srcLabel = sourceLabels[source] || source.substring(0, 3);
@@ -635,7 +648,7 @@ async function loadThreads() {
             return;
         }
 
-        const badgeColors = { antigravity: '#D4AF37', gemini: '#4285F4', chatgpt: '#10A37F' };
+        const badgeColors = SOURCE_COLORS;
         const badgeLabels = { antigravity: 'AG', gemini: 'GEM', chatgpt: 'GPT' };
 
         list.innerHTML = threads.map(t => {
@@ -651,7 +664,7 @@ async function loadThreads() {
                     <div class="thread-badges">${badges}</div>
                     <div class="thread-title">${esc(t.title)}</div>
                 </div>
-                <div class="thread-summary">${esc(t.summary).substring(0, 200)}${t.summary.length > 200 ? '…' : ''}</div>
+                <div class="thread-summary">${esc(stripMarkdown(t.summary)).substring(0, 200)}${t.summary.length > 200 ? '…' : ''}</div>
                 <div class="thread-meta">
                     <span>${t.sessionCount} session${t.sessionCount !== 1 ? 's' : ''}</span>
                     <span>${t.artifactCount} artifact${t.artifactCount !== 1 ? 's' : ''}</span>
@@ -662,6 +675,96 @@ async function loadThreads() {
         }).join('');
     } catch {
         list.innerHTML = '<div class="empty-state"><div class="empty-text">Error loading threads</div></div>';
+    }
+}
+
+
+// ── Project Workspaces ──────────────────────────────────────────
+
+async function loadProjects() {
+    const list = document.getElementById('projects-list');
+    const detailView = document.getElementById('project-detail-view');
+    if (detailView) detailView.style.display = 'none';
+    if (!list) return;
+    
+    try {
+        const projects = await window.vault.getProjects();
+        if (!projects || projects.length === 0) {
+            list.innerHTML = '<div class="empty-state"><div class="empty-icon">📂</div><div class="empty-text">Create a project to group sessions across models</div></div>';
+            list.style.display = '';
+            return;
+        }
+
+        const bc = SOURCE_COLORS;
+        const bl = SOURCE_LABELS;
+
+        list.innerHTML = projects.map(p => {
+            const badges = (p.sources || []).map(s => '<span class="source-badge" style="background:' + (bc[s]||'#666') + '">' + (bl[s]||s.toUpperCase().substring(0,3)) + '</span>').join('');
+            const lastAct = p.lastActivity ? new Date(p.lastActivity).toLocaleDateString() : 'No activity';
+            return '<div class="project-card" data-action="open-project" data-project-id="' + p.id + '" style="border-left:3px solid ' + p.color + '">' +
+                '<div class="project-card-header">' +
+                    '<span class="project-icon">' + p.icon + '</span>' +
+                    '<span class="project-name">' + esc(p.name) + '</span>' +
+                    '<div class="project-badges">' + badges + '</div>' +
+                '</div>' +
+                '<div class="project-card-meta">' +
+                    '<span>' + p.session_count + ' session' + (p.session_count !== 1 ? 's' : '') + '</span>' +
+                    '<span>Last: ' + lastAct + '</span>' +
+                '</div>' +
+                (p.description ? '<div class="project-card-desc">' + esc(p.description).substring(0,120) + '</div>' : '') +
+                '<button class="btn-delete-project" data-action="delete-project" data-project-id="' + p.id + '" title="Delete project">×</button>' +
+            '</div>';
+        }).join('');
+        list.style.display = '';
+    } catch (e) {
+        console.error('[Projects] Load error:', e);
+        list.innerHTML = '<div class="empty-state"><div class="empty-text">Error loading projects</div></div>';
+    }
+}
+
+async function openProject(projectId) {
+    const list = document.getElementById('projects-list');
+    const detailView = document.getElementById('project-detail-view');
+    if (!detailView) return;
+
+    try {
+        const detail = await window.vault.getProjectDetail(projectId);
+        if (!detail) return;
+
+        list.style.display = 'none';
+        detailView.style.display = '';
+
+        document.getElementById('project-detail-name').textContent = detail.icon + ' ' + detail.name;
+
+        const bc = SOURCE_COLORS;
+        const bl = SOURCE_LABELS;
+
+        const timeline = document.getElementById('project-timeline');
+        if (!detail.sessions || detail.sessions.length === 0) {
+            timeline.innerHTML = '<div class="empty-state"><div class="empty-text">No sessions linked yet. Use the Journal to add sessions to this project.</div></div>';
+            return;
+        }
+
+        timeline.innerHTML = detail.sessions.map(s => {
+            const srcColor = bc[s.source] || '#666';
+            const srcLabel = bl[s.source] || s.source;
+            const lastAct = s.lastActivity ? new Date(s.lastActivity).toLocaleDateString() : '';
+            const heading = s.artifacts.length > 0 ? (s.artifacts[0].heading || s.artifacts[0].file) : s.conversationId.substring(0, 8);
+            const summary = s.artifacts.length > 0 ? (s.artifacts[0].summary || '').substring(0, 200) : '';
+
+            return '<div class="project-session-card">' +
+                '<div class="project-session-header">' +
+                    '<span class="source-badge" style="background:' + srcColor + '">' + srcLabel + '</span>' +
+                    '<span class="project-session-title">' + esc(heading) + '</span>' +
+                    '<span class="project-session-date">' + lastAct + '</span>' +
+                    '<button class="btn-unlink" data-action="unlink-session" data-project-id="' + detail.id + '" data-conv-id="' + s.conversationId + '" title="Remove from project">×</button>' +
+                '</div>' +
+                (summary ? '<div class="project-session-summary">' + esc(summary) + '</div>' : '') +
+                '<div class="project-session-artifacts">' + s.artifacts.length + ' artifact' + (s.artifacts.length !== 1 ? 's' : '') + (s.autoLinked ? ' · auto-linked' : '') + '</div>' +
+            '</div>';
+        }).join('');
+    } catch (e) {
+        console.error('[Projects] Detail error:', e);
     }
 }
 
@@ -682,7 +785,7 @@ async function expandThread(topic) {
         const detail = await window.vault.getThreadDetail(topic);
         if (!detail) { detailEl.innerHTML = '<div class="empty-text">Could not load thread detail</div>'; return; }
 
-        const badgeColors = { antigravity: '#D4AF37', gemini: '#4285F4', chatgpt: '#10A37F' };
+        const badgeColors = SOURCE_COLORS;
         const badgeLabels = { antigravity: 'AG', gemini: 'Gem', chatgpt: 'GPT' };
 
         // Full summary
@@ -1230,6 +1333,19 @@ function esc(str) {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+}
+
+function stripMarkdown(text) {
+    if (!text) return '';
+    return text
+        .replace(/^#{1,6}\s+/gm, '')             // strip heading markers
+        .replace(/\*\*(.+?)\*\*/g, '$1')          // bold → plain
+        .replace(/\*(.+?)\*/g, '$1')              // italic → plain
+        .replace(/`([^`]+)`/g, '$1')              // inline code → plain
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')   // links → text
+        .replace(/^\s*[-*]\s+/gm, '')             // list bullets
+        .replace(/\n{2,}/g, ' ')                  // collapse newlines
+        .trim();
 }
 
 function toDateStr(d) {
@@ -1787,6 +1903,88 @@ function setupEventDelegation() {
                 document.getElementById('followup-panel').style.display = 'none';
                 break;
             }
+            case 'show-projects-tab': {
+                // Handled by standalone handler at end of file — skip to avoid double-fire
+                break;
+            }
+            case 'new-project': {
+                const modal = document.getElementById('new-project-modal');
+                if (modal) modal.style.display = 'flex';
+                const ni = document.getElementById('new-project-name');
+                if (ni) { ni.value = ''; ni.focus(); }
+                const di = document.getElementById('new-project-desc');
+                if (di) di.value = '';
+                break;
+            }
+            case 'close-project-modal': {
+                const modal = document.getElementById('new-project-modal');
+                if (modal) modal.style.display = 'none';
+                break;
+            }
+            case 'create-project': {
+                const name = document.getElementById('new-project-name')?.value?.trim();
+                if (!name) break;
+                const desc = document.getElementById('new-project-desc')?.value?.trim() || '';
+                const activeSwatch = document.querySelector('.color-swatch.active');
+                const color = activeSwatch ? activeSwatch.dataset.color : '#D4AF37';
+                window.vault.createProject(name, desc, color, '📂').then(() => {
+                const modal2 = document.getElementById('new-project-modal');
+                if (modal2) modal2.style.display = 'none';
+                loadProjects();
+                }); break;
+            }
+            case 'open-project': {
+                const pid = el.dataset.projectId || el.closest('[data-project-id]')?.dataset?.projectId;
+                if (pid) openProject(parseInt(pid));
+                break;
+            }
+            case 'back-to-projects': {
+                loadProjects();
+                break;
+            }
+            case 'delete-project': {
+                const pid = el.dataset.projectId;
+                if (pid && confirm('Delete this project? Sessions will not be affected.')) {
+                    window.vault.deleteProject(parseInt(pid)).then(() => {
+                    loadProjects();
+                });
+                }
+                break;
+            }
+            case 'unlink-session': {
+                const pid = el.dataset.projectId;
+                const cid = el.dataset.convId;
+                if (pid && cid) {
+                    window.vault.unlinkSession(parseInt(pid), cid).then(() => {
+                    openProject(parseInt(pid));
+                });
+                }
+                break;
+            }
+            case 'add-to-project': {
+                const cid = el.dataset.convId;
+                const src = el.dataset.source || 'antigravity';
+                if (!cid) break;
+                window.vault.getProjects().then(projects => {
+                if (!projects || projects.length === 0) {
+                    const name = prompt('No projects yet. Enter a name to create one:');
+                    if (name) {
+                        const pid = window.vault.createProject(name).then(pid2 => window.vault.linkSession(pid2, cid, src).then(() => showToast("Session linked to " + name)));
+                    }
+                } else {
+                    const choices = projects.map((p, i) => (i + 1) + '. ' + p.name).join('\n');
+                    const pick = prompt('Select project:\n' + choices + '\n\nEnter number (or type a new name):');
+                    if (!pick) return;
+                    const idx = parseInt(pick) - 1;
+                    if (idx >= 0 && idx < projects.length) {
+                        window.vault.linkSession(projects[idx].id, cid, src).then(() => showToast("Linked to " + projects[idx].name));
+                    } else {
+                        const pid = window.vault.createProject(pick.trim()).then(pid3 => window.vault.linkSession(pid3, cid, src).then(() => showToast("Created & linked to " + pick.trim())));
+                    }
+                }
+                });
+                break;
+            }
             case 'toggle-ki-health': {
                 const p = document.getElementById('ki-health-panel');
                 const showing = p && p.style.display !== 'none';
@@ -2188,3 +2386,478 @@ async function loadSessionContinuity(convId, container) {
         container.innerHTML = html;
     } catch { container.innerHTML = ''; }
 }
+
+// ═══════════════════════════════════════════════════════════════
+// VERITAS VAULT v3.1 — CONSOLIDATED FEATURE JS
+// Single file. Covers: DOM reorder, heatmap interactivity + month
+// labels, action item folding, dismiss persistence.
+// ═══════════════════════════════════════════════════════════════
+
+(function VaultV31() {
+    'use strict';
+
+    // ── 1. Move activity section above morning brief ────────────
+    function reorderSections() {
+        var scroll = document.querySelector('.journal-scroll');
+        var heat   = document.getElementById('momentum-section');
+        if (scroll && heat && scroll.firstChild !== heat) {
+            scroll.insertBefore(heat, scroll.firstChild);
+        }
+    }
+
+    // ── 2. Action items folding ─────────────────────────────────
+    // Shows HIGH items + top 5 MEDIUM by default. "Show all" button.
+    function setupActionFolding() {
+        var panel = document.querySelector('.action-items-panel');
+        if (!panel || panel.dataset.folded) return;
+        panel.dataset.folded = '1';
+
+        var items  = Array.from(panel.querySelectorAll('.action-item'));
+        if (items.length <= 6) return; // not worth folding
+
+        // Sort: HIGH first, then MEDIUM, then LOW
+        var priority = function(el) {
+            var p = (el.querySelector('.action-priority') || {}).textContent || '';
+            return p.includes('HIGH') ? 0 : p.includes('MEDIUM') ? 1 : 2;
+        };
+        items.sort(function(a,b) { return priority(a) - priority(b); });
+        items.forEach(function(el,i) { el.parentNode.appendChild(el); }); // re-order in DOM
+
+        // Hide items beyond top 6 (all HIGH + top 5 MEDIUM equiv)
+        var visibleCount = 0;
+        items.forEach(function(el) {
+            if (priority(el) === 0) { el.classList.remove('vv-hidden'); } // always show HIGH
+            else {
+                if (visibleCount < 5) { el.classList.remove('vv-hidden'); visibleCount++; }
+                else { el.classList.add('vv-hidden'); }
+            }
+        });
+
+        var hiddenCount = items.filter(function(el){ return el.classList.contains('vv-hidden'); }).length;
+        if (hiddenCount === 0) return;
+
+        // Create "Show all" button
+        var btn = document.createElement('button');
+        btn.id = 'action-show-more';
+        btn.textContent = 'Show all ' + items.length + ' items';
+        panel.appendChild(btn);
+
+        btn.addEventListener('click', function() {
+            var expanded = btn.dataset.expanded === '1';
+            items.forEach(function(el) {
+                el.classList.toggle('vv-hidden', expanded && priority(el) !== 0 && items.indexOf(el) >= (items.filter(function(x){return priority(x)===0;}).length + 5));
+            });
+            if (expanded) {
+                btn.textContent = 'Show all ' + items.length + ' items';
+                btn.dataset.expanded = '0';
+                items.filter(function(el){ return !el.classList.contains('vv-hidden'); }).slice(-1)[0]?.scrollIntoView({behavior:'smooth',block:'nearest'});
+            } else {
+                items.forEach(function(el){ el.classList.remove('vv-hidden'); });
+                btn.textContent = 'Show less';
+                btn.dataset.expanded = '1';
+            }
+        });
+    }
+
+    // ── 3. Heatmap: month labels + interactivity ────────────────
+    var heatTip = null;
+    function ensureTip() {
+        if (heatTip) return;
+        heatTip = document.createElement('div');
+        heatTip.id = 'heat-tip';
+        heatTip.style.cssText = 'position:fixed;pointer-events:none;z-index:9999;background:#1A1A1A;border:1px solid rgba(212,175,55,0.35);border-radius:7px;padding:7px 12px;font-size:11px;color:#E0E0E0;line-height:1.5;box-shadow:0 4px 18px rgba(0,0,0,0.5);opacity:0;transition:opacity 0.1s;white-space:nowrap';
+        document.body.appendChild(heatTip);
+    }
+
+    function setupHeatmap() {
+        var section = document.getElementById('momentum-section');
+        var grid    = section && section.querySelector('.momentum-grid, .heatmap-grid, .heat-grid');
+        if (!section || !grid) return;
+        ensureTip();
+
+        // Month labels: derive from data-date attributes or sequential
+        var cells     = Array.from(section.querySelectorAll('.heat-cell'));
+        var totalCols = cells.length;
+
+        // Inject month row if not already there
+        if (!section.querySelector('.heatmap-month-row') && totalCols > 0) {
+            var monthRow = document.createElement('div');
+            monthRow.className = 'heatmap-month-row';
+            // Determine column count (assumed 14 weeks = 14 columns for weekly bars)
+            var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            var now = new Date();
+            // Build label for each column based on week offset from today
+            var cols = grid.children.length || 14;
+            for (var c = 0; c < cols; c++) {
+                var weeksAgo = cols - 1 - c;
+                var d = new Date(now);
+                d.setDate(d.getDate() - weeksAgo * 7);
+                var lbl = document.createElement('div');
+                lbl.className = 'heatmap-month-label';
+                // Show month label only on first column of that month
+                var prevWeek = new Date(d); prevWeek.setDate(prevWeek.getDate()-7);
+                lbl.textContent = (c === 0 || prevWeek.getMonth() !== d.getMonth()) ? months[d.getMonth()] : '';
+                monthRow.appendChild(lbl);
+            }
+            section.appendChild(monthRow);
+        }
+
+        // Wire cell interactivity
+        cells.forEach(function(cell) {
+            if (cell.dataset.wired) return;
+            cell.dataset.wired = '1';
+
+            var rawTitle = cell.getAttribute('title') || '';
+            cell.removeAttribute('title');
+            if (!rawTitle) return;
+
+            var parts  = rawTitle.split(': ');
+            var dateStr = parts[0] || '';
+            var countStr = parts[1] || '';
+            var displayDate = dateStr;
+            try {
+                var d2 = new Date(dateStr + 'T12:00:00');
+                displayDate = d2.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+            } catch(e){}
+
+            function moveTip(e) {
+                var x = e.clientX+14, y = e.clientY-40;
+                if (x+180 > window.innerWidth) x = e.clientX-160;
+                heatTip.style.left = x+'px'; heatTip.style.top = y+'px';
+            }
+
+            cell.addEventListener('mouseenter', function(e) {
+                heatTip.innerHTML = '<strong style="color:#D4AF37">' + displayDate + '</strong>' + (countStr ? '<br>'+countStr : '');
+                heatTip.style.opacity = '1';
+                moveTip(e);
+            });
+            cell.addEventListener('mousemove', moveTip);
+            cell.addEventListener('mouseleave', function() { heatTip.style.opacity = '0'; });
+
+            if (cell.dataset.level > '0') {
+                cell.addEventListener('click', function() {
+                    var dayCards = document.querySelectorAll('.day-card,[data-date]');
+                    var target = null;
+                    dayCards.forEach(function(el) {
+                        var elDate = el.dataset.date || '';
+                        if (!elDate) { var h = el.querySelector('.day-header,h2,h3'); if(h) elDate=h.textContent; }
+                        if (dateStr && elDate.includes(dateStr.slice(5))) target = el;
+                    });
+                    if (target) {
+                        target.scrollIntoView({behavior:'smooth',block:'start'});
+                        target.style.transition = 'background 0.3s';
+                        target.style.background = 'rgba(212,175,55,0.07)';
+                        setTimeout(function(){ target.style.background=''; }, 1200);
+                    }
+                });
+            }
+        });
+    }
+
+    // ── 4. Dismiss persistence ──────────────────────────────────
+    function setupDismissFix() {
+        var panel = document.getElementById('followup-panel');
+        if (!panel) return;
+        panel.addEventListener('click', function(e) {
+            var btn = e.target.closest('[data-action="dismiss-followup"]');
+            if (!btn) return;
+            var fId = btn.dataset.followupId;
+            if (!fId) return;
+            try {
+                var d = JSON.parse(localStorage.getItem('vv_dismissed_fu')||'[]');
+                if (!d.includes(fId)) { d.push(fId); localStorage.setItem('vv_dismissed_fu',JSON.stringify(d)); }
+            } catch(e2){}
+        }, true);
+        new MutationObserver(function() {
+            try {
+                var dismissed = JSON.parse(localStorage.getItem('vv_dismissed_fu')||'[]');
+                dismissed.forEach(function(fId) {
+                    var btn = panel.querySelector('[data-followup-id="'+fId+'"]');
+                    if (btn) { var card = btn.closest('.followup-card'); if(card) card.remove(); }
+                });
+            } catch(e){}
+        }).observe(panel, {childList:true,subtree:true});
+    }
+
+    // ── Bootstrap ───────────────────────────────────────────────
+    function init() {
+        reorderSections();
+        setupDismissFix();
+
+        // Heatmap and action folding need the morning brief to be rendered first
+        var Observer = new MutationObserver(function() {
+            setupHeatmap();
+            setupActionFolding();
+        });
+        var brief = document.getElementById('morning-brief');
+        if (brief) Observer.observe(brief, {childList:true, subtree:true, attributes:true});
+
+        // Also try directly after 1s and 3s as fallback
+        setTimeout(function() { setupHeatmap(); setupActionFolding(); }, 1000);
+        setTimeout(function() { setupHeatmap(); setupActionFolding(); }, 3000);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function(){setTimeout(init,100);});
+    } else {
+        setTimeout(init, 100);
+    }
+
+})();
+// END VaultV31
+
+// VAULT v3.2 â€” heatmap month labels + interactivity + DOM reorder + action fold + dismiss
+(function VaultV32() {
+    'use strict';
+
+    // â”€â”€ DOM reorder â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    function reorderSections() {
+        var scroll = document.querySelector('.journal-scroll');
+        var heat   = document.getElementById('momentum-section');
+        if (scroll && heat && scroll.firstChild !== heat) scroll.insertBefore(heat, scroll.firstChild);
+    }
+
+    // â”€â”€ Tooltip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    var tip;
+    function ensureTip() {
+        if (tip) return;
+        tip = document.createElement('div');
+        tip.id = 'heat-tip';
+        tip.style.cssText = 'position:fixed;pointer-events:none;z-index:9999;background:#1A1A1A;border:1px solid rgba(212,175,55,0.35);border-radius:7px;padding:7px 12px;font-size:11px;color:#E0E0E0;line-height:1.5;box-shadow:0 4px 18px rgba(0,0,0,0.5);opacity:0;transition:opacity 0.1s;white-space:nowrap';
+        document.body.appendChild(tip);
+    }
+
+    // â”€â”€ Heatmap: month labels derived from ACTUAL cell dates â”€â”€â”€â”€
+    function setupHeatmap() {
+        var section = document.getElementById('momentum-section');
+        if (!section) return;
+        ensureTip();
+
+        var cells = Array.from(section.querySelectorAll('.heat-cell'));
+        if (!cells.length) return;
+
+        // Wire each cell (hover + click) â€” once only
+        cells.forEach(function(cell) {
+            if (cell.dataset.wired) return;
+            cell.dataset.wired = '1';
+            var rawTitle = cell.getAttribute('title') || '';
+            cell.removeAttribute('title');
+            if (!rawTitle) return;
+            var dateStr   = rawTitle.split(':')[0].trim();
+            var countStr  = rawTitle.split(': ')[1] || '';
+            var dispDate  = dateStr;
+            try { dispDate = new Date(dateStr+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); } catch(e){}
+
+            cell.addEventListener('mouseenter', function(e) {
+                tip.innerHTML = '<strong style="color:#D4AF37">'+dispDate+'</strong>'+(countStr?'<br>'+countStr:'');
+                tip.style.opacity='1'; moveTip(e);
+            });
+            cell.addEventListener('mousemove', moveTip);
+            cell.addEventListener('mouseleave', function(){ tip.style.opacity='0'; });
+
+            if (parseInt(cell.dataset.level||0) > 0) {
+                cell.style.cursor = 'pointer';
+                cell.addEventListener('click', function() {
+                    var target = null;
+                    document.querySelectorAll('.day-card,[data-date]').forEach(function(el) {
+                        var ed = el.dataset.date||'';
+                        if (!ed) { var h=el.querySelector('.day-header,h2,h3'); if(h) ed=h.textContent; }
+                        if (dateStr && ed.includes(dateStr.slice(5))) target=el;
+                    });
+                    if (target) {
+                        target.scrollIntoView({behavior:'smooth',block:'start'});
+                        target.style.transition='background 0.3s ease';
+                        target.style.background='rgba(212,175,55,0.07)';
+                        setTimeout(function(){ target.style.background=''; },1200);
+                    }
+                });
+            }
+        });
+
+        // â”€ Build month labels using actual dates from cell titles â”€
+        if (section.querySelector('.heatmap-month-row')) return; // already done
+
+        // The grid is 7 rows Ã— N columns (one column = one week).
+        // cells[0] = oldest day, cells[last] = newest day.
+        // We need to detect the column count from CSS or the grid element.
+        var grid = section.querySelector('#momentum-grid');
+        if (!grid || !cells.length) return;
+
+        var gridStyle = window.getComputedStyle(grid);
+        var colTemplate = gridStyle.getPropertyValue('grid-template-columns') || '';
+        // Count columns: colTemplate is "Xpx Xpx ..." â€” count spaces isn't reliable.
+        // Better: total cells / 7 rows (7 days per column)
+        var totalCells = cells.length;
+        var rows = 7; // standard heatmap: 7 days per column
+        var cols = Math.ceil(totalCells / rows);
+
+        // Parse actual date from each column's first cell
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        var monthRow = document.createElement('div');
+        monthRow.className = 'heatmap-month-row';
+        monthRow.style.cssText = 'display:grid;grid-template-columns:repeat('+cols+',1fr);padding:4px 0 0;font-size:8px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:#2E2C28';
+
+        var lastMonth = -1;
+        for (var c = 0; c < cols; c++) {
+            var cellIdx = c * rows;
+            var cell0 = cells[cellIdx];
+            var lbl = document.createElement('div');
+            lbl.style.cssText = 'text-align:center';
+            if (cell0) {
+                // date from data-date attr we set, or from the wired rawTitle stored elsewhere
+                // We need the date â€” re-read from title if available, else skip
+                // Since we removed title above, check if cellIdx has a wired date
+                // Better: store date on dataset when wiring
+                var d0title = cell0.dataset.cellDate || '';
+                if (d0title) {
+                    try {
+                        var d0 = new Date(d0title+'T12:00:00');
+                        var m = d0.getMonth();
+                        lbl.textContent = (m !== lastMonth) ? months[m] : '';
+                        lastMonth = m;
+                    } catch(e) {}
+                }
+            }
+            monthRow.appendChild(lbl);
+        }
+
+        // Move streak badge above month row
+        var badge = section.querySelector('#streak-badge');
+        // Insert month row before the badge, or append to section
+        if (badge && badge.parentNode === section) {
+            section.insertBefore(monthRow, badge);
+        } else {
+            var grid2 = section.querySelector('#momentum-grid');
+            if (grid2) grid2.after(monthRow);
+            else section.appendChild(monthRow);
+        }
+    }
+
+    // Store cell dates BEFORE removing titles, so month row can read them
+    function preTagCells() {
+        var cells = document.querySelectorAll('#momentum-section .heat-cell:not([data-cell-date])');
+        cells.forEach(function(cell) {
+            var t = cell.getAttribute('title') || '';
+            if (t) cell.dataset.cellDate = t.split(':')[0].trim();
+        });
+    }
+
+    // â”€â”€ Streak badge layout fix â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    function fixStreakLayout() {
+        var badge = document.getElementById('streak-badge');
+        if (!badge) return;
+        badge.style.cssText = 'display:block;padding:6px 0 0;font-size:11px;font-weight:700;color:#D4AF37;letter-spacing:0.2px';
+    }
+
+    // â”€â”€ Action items folding â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    function setupActionFolding() {
+        var panel = document.querySelector('.action-items-panel');
+        if (!panel || panel.dataset.folded) return;
+        panel.dataset.folded = '1';
+        var items = Array.from(panel.querySelectorAll('.action-item'));
+        if (items.length <= 6) return;
+
+        var hp = function(el){ var t=(el.querySelector('.action-priority')||{}).textContent||''; return t.indexOf('HIGH')>=0?0:t.indexOf('MEDIUM')>=0?1:2; };
+        items.sort(function(a,b){ return hp(a)-hp(b); });
+        items.forEach(function(el){ el.parentNode.appendChild(el); });
+
+        var shown = 0;
+        items.forEach(function(el){
+            var p = hp(el);
+            if (p===0 || (p===1 && shown<5)) { el.classList.remove('vv-hidden'); if(p>0) shown++; }
+            else { el.classList.add('vv-hidden'); }
+        });
+
+        var hidden = items.filter(function(el){ return el.classList.contains('vv-hidden'); }).length;
+        if (!hidden) return;
+
+        var btn = document.createElement('button');
+        btn.id = 'action-show-more';
+        btn.textContent = 'Show all '+items.length+' items';
+        panel.appendChild(btn);
+        btn.addEventListener('click', function() {
+            var exp = btn.dataset.exp==='1';
+            if (!exp) { items.forEach(function(el){ el.classList.remove('vv-hidden'); }); btn.textContent='Show less'; btn.dataset.exp='1'; }
+            else {
+                shown=0; items.forEach(function(el){
+                    var p=hp(el);
+                    if(p===0||(p===1&&shown<5)){el.classList.remove('vv-hidden');if(p>0)shown++;}
+                    else{el.classList.add('vv-hidden');}
+                });
+                btn.textContent='Show all '+items.length+' items'; btn.dataset.exp='0';
+            }
+        });
+    }
+
+    // â”€â”€ Dismiss persistence â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    function setupDismissFix() {
+        var panel = document.getElementById('followup-panel');
+        if (!panel) return;
+        panel.addEventListener('click', function(e) {
+            var btn = e.target.closest('[data-action="dismiss-followup"]');
+            if (!btn) return;
+            try { var d=JSON.parse(localStorage.getItem('vv_dismissed_fu')||'[]'); if(!d.includes(btn.dataset.followupId)){d.push(btn.dataset.followupId);localStorage.setItem('vv_dismissed_fu',JSON.stringify(d));} } catch(e2){}
+        }, true);
+        new MutationObserver(function(){
+            try { var dm=JSON.parse(localStorage.getItem('vv_dismissed_fu')||'[]'); dm.forEach(function(id){ var b=panel.querySelector('[data-followup-id="'+id+'"]'); if(b){var c=b.closest('.followup-card');if(c)c.remove();} }); } catch(e){}
+        }).observe(panel, {childList:true,subtree:true});
+    }
+
+    function moveTip(e) { var x=e.clientX+14,y=e.clientY-40; if(x+180>window.innerWidth) x=e.clientX-155; tip.style.left=x+'px'; tip.style.top=y+'px'; }
+
+    // â”€â”€ Bootstrap â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    function init() {
+        reorderSections();
+        fixStreakLayout();
+        setupDismissFix();
+        preTagCells();
+        setupHeatmap();
+        setupActionFolding();
+        // Re-run after renders settle
+        setTimeout(function(){ preTagCells(); setupHeatmap(); setupActionFolding(); }, 1500);
+        setTimeout(function(){ setupHeatmap(); }, 3500);
+    }
+
+    if (document.readyState==='loading') { document.addEventListener('DOMContentLoaded',function(){ setTimeout(init,150); }); }
+    else { setTimeout(init,150); }
+
+})();
+// END VaultV32
+// Color swatch selection for project modal
+document.addEventListener("click", (e) => {
+    if (e.target.classList.contains("color-swatch")) {
+        document.querySelectorAll(".color-swatch").forEach(s => s.classList.remove("active"));
+        e.target.classList.add("active");
+    }
+});
+
+// ── Projects Sub-Tab Handler ─────────────────────── (projects-tab-handler)
+document.addEventListener('click', (e) => {
+    const tab = e.target.closest('.projects-tab');
+    if (!tab) return;
+    
+    const tabName = tab.dataset.tab;
+    if (!tabName) return;
+
+    // Toggle active tab styling
+    document.querySelectorAll('.projects-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+
+    // Show/hide sections
+    const lists = document.getElementById('projects-list');
+    const threads = document.getElementById('projects-threads-section');
+    const health = document.getElementById('projects-health-section');
+    const detail = document.getElementById('project-detail-view');
+    const newBtn = document.getElementById('btn-new-project');
+
+    if (lists) lists.style.display = tabName === 'workspaces' ? '' : 'none';
+    if (threads) threads.style.display = tabName === 'threads' ? '' : 'none';
+    if (health) health.style.display = tabName === 'health' ? '' : 'none';
+    if (detail) detail.style.display = 'none';
+    if (newBtn) newBtn.style.display = tabName === 'workspaces' ? '' : 'none';
+
+    // Load content for the selected tab
+    if (tabName === 'threads' && typeof loadThreads === 'function') loadThreads();
+    if (tabName === 'health' && typeof loadKIHealth === 'function') loadKIHealth();
+    if (tabName === 'workspaces' && typeof loadProjects === 'function') loadProjects();
+});

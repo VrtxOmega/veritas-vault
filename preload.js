@@ -104,6 +104,7 @@ contextBridge.exposeInMainWorld('vault', {
     // ── Live Events ──────────────────────────────────────────────
     onCapture: (cb) => { ipcRenderer.on('vault:capture-event', (_, d) => cb(d)); },
     onCaptureWarning: (cb) => { ipcRenderer.on('vault:capture-warning', (_, d) => cb(d)); },
+    onTelemetry: (cb) => { ipcRenderer.on('vault:telemetry', (_, d) => cb(d)); },
 
     // ── External ─────────────────────────────────────────────────
     openExternal: (url) => ipcRenderer.send('open-external', url),
@@ -111,7 +112,17 @@ contextBridge.exposeInMainWorld('vault', {
 
     // ── Platform ─────────────────────────────────────────────────
     platform: process.platform,
-    version: '3.0.0',
+    version: '3.5.0',
+
+    // ── Project Workspaces ────────────────────────────────────────
+    createProject:     (name, desc, color, icon) => ipcRenderer.invoke('vault:create-project', name, desc, color, icon),
+    getProjects:       ()           => ipcRenderer.invoke('vault:projects'),
+    getProjectDetail:  (id)         => ipcRenderer.invoke('vault:project-detail', id),
+    linkSession:       (pid, cid, src) => ipcRenderer.invoke('vault:link-session', pid, cid, src),
+    unlinkSession:     (pid, cid)   => ipcRenderer.invoke('vault:unlink-session', pid, cid),
+    deleteProject:     (id)         => ipcRenderer.invoke('vault:delete-project', id),
+    updateProject:     (id, fields) => ipcRenderer.invoke('vault:update-project', id, fields),
+    autoSuggestProject:(cid)        => ipcRenderer.invoke('vault:suggest-project', cid),
 
     // ── Capture Token (for extension setup) ──────────────────────
     getCaptureToken: () => ipcRenderer.invoke('vault:get-capture-token'),

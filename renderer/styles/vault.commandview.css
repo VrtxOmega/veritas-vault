@@ -1,0 +1,149 @@
+
+/* ═══════════════════════════════════════════════════════════════
+   VERITAS VAULT v3.1c — COMMAND VIEW LAYOUT
+   Two-column journal: morning brief pinned right, 
+   activity + sessions scrollable on the left.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Journal panel: full height flex ── */
+#panel-journal {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    overflow: hidden !important;
+}
+
+/* ── Now Working On banner stays full width above grid ── */
+.now-working-banner {
+    flex-shrink: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-top: none !important;
+}
+
+/* ── Main content area: 2-column grid ── */
+.journal-scroll {
+    flex: 1 !important;
+    display: grid !important;
+    grid-template-columns: 1fr 360px !important;
+    grid-template-rows: auto 1fr !important;
+    gap: 0 16px !important;
+    overflow: hidden !important;
+    padding: 16px 16px 0 16px !important;
+    min-height: 0 !important;
+}
+
+/* ── Right column: Morning brief (pinned, scrollable independently) ── */
+#morning-brief {
+    grid-column: 2 !important;
+    grid-row: 1 / 3 !important;
+    overflow-y: auto !important;
+    max-height: 100% !important;
+    padding-bottom: 20px !important;
+    scrollbar-width: thin !important;
+    position: sticky !important;
+    top: 0 !important;
+    align-self: start !important;
+    max-height: calc(100vh - 80px) !important;
+    overflow-y: auto !important;
+}
+
+/* ── Left column row 1: Momentum + filter bar ── */
+#momentum-section {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    flex-shrink: 0 !important;
+}
+#timeline-filter-bar {
+    grid-column: 1 !important;
+    margin-top: 0 !important;
+}
+
+/* ── Left column row 2: Journal entries (scrollable) ── */
+.journal-entries,
+#journal-list,
+.journal-days {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    overflow-y: auto !important;
+    min-height: 0 !important;
+    padding-right: 4px !important;
+    padding-bottom: 60px !important;
+}
+
+/* Force day sections and session cards into left column ordering */
+.day-section,
+.day-card,
+.load-earlier-btn {
+    grid-column: 1 !important;
+}
+
+/* ── Morning brief: tighter in the right column ── */
+#morning-brief .morning-brief {
+    margin-bottom: 12px !important;
+}
+#morning-brief .action-items-section {
+    margin-top: 8px !important;
+}
+#morning-brief .action-item-list {
+    max-height: calc(100vh - 400px) !important;
+    overflow-y: auto !important;
+    scrollbar-width: thin !important;
+}
+
+/* Divider between columns */
+.journal-scroll::before {
+    content: '' !important;
+    position: absolute !important;
+    display: none !important;
+}
+
+/* Vertical separator line */
+#morning-brief::before {
+    content: '' !important;
+    position: absolute !important;
+    left: -9px !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    width: 1px !important;
+    background: rgba(255,255,255,0.06) !important;
+    pointer-events: none !important;
+}
+#morning-brief {
+    position: relative !important;
+}
+
+/* ── Responsive: collapse to single column on narrow windows ── */
+@media (max-width: 900px) {
+    .journal-scroll {
+        grid-template-columns: 1fr !important;
+        grid-template-rows: auto !important;
+        overflow-y: auto !important;
+    }
+    #morning-brief {
+        grid-column: 1 !important;
+        grid-row: auto !important;
+        max-height: none !important;
+        position: static !important;
+    }
+}
+
+/* ── Follow-up dismiss: ensure button is always clickable ── */
+.followup-card .btn-dismiss,
+.followup-card [data-action="dismiss-followup"] {
+    pointer-events: all !important;
+    cursor: pointer !important;
+    z-index: 10 !important;
+    position: relative !important;
+}
+
+/* ── Smart Follow-ups panel: better styling ── */
+#followup-panel {
+    border-left: 1px solid rgba(212, 175, 55, 0.2) !important;
+    background: #111111 !important;
+}
+
+/* END Command View Layout */

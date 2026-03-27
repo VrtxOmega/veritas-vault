@@ -696,7 +696,7 @@ module.exports = function createJournalEngine(deps) {
                     else if (t.startsWith('- [x]')) completed.push(t.substring(6));
                 }
 
-                if (open.length > 0 || inProgress.length > 0) {
+                if (open.length > 0 || inProgress.length > 0 || completed.length > 0) {
                     let updatedAt;
                     try {
                         const meta = JSON.parse(fs.readFileSync(taskPath + '.metadata.json', 'utf-8'));
@@ -1934,7 +1934,7 @@ module.exports = function createJournalEngine(deps) {
 
     function getActionItems(status = 'open') {
         try {
-            return dbAll('SELECT * FROM action_items WHERE status = ? ORDER BY CASE priority WHEN "HIGH" THEN 1 WHEN "MEDIUM" THEN 2 ELSE 3 END, created_at DESC LIMIT 30', [status]);
+            return dbAll(`SELECT * FROM action_items WHERE status = ? ORDER BY CASE priority WHEN 'HIGH' THEN 1 WHEN 'MEDIUM' THEN 2 ELSE 3 END, created_at DESC LIMIT 30`, [status]);
         } catch { return []; }
     }
 
@@ -2055,6 +2055,233 @@ module.exports = function createJournalEngine(deps) {
         return sections.join('\n');
     }
 
+    // ── Project Workspaces (Cross-Model) ──────────────────────────
+
+    function createProject(name, description = '', color = '#D4AF37', icon = '📁') {
+        const now = Date.now();
+        dbRun(`INSERT INTO projects (name, description, color, icon, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)`,
+            [name, description, color, icon, now, now]);
+        const row = dbGet('SELECT last_insert_rowid() as id');
+        return row ? row.id : null;
+    }
+
+    function getProjects() {
+        const projects = dbAll(`SELECT p.*, 
+            (SELECT COUNT(*) FROM project_sessions WHERE project_id = p.id) as session_count
+            FROM projects p ORDER BY p.updated_at DESC`);
+        
+        const all = scanBrainArtifacts();
+        for (const proj of projects) {
+            const linked = dbAll('SELECT conversation_id, source FROM project_sessions WHERE project_id = ?', [proj.id]);
+            const sources = new Set();
+            let lastActivity = 0;
+            for (const link of linked) {
+                if (link.source) sources.add(link.source);
+                const arts = all.filter(a => a.conversationId === link.conversation_id);
+                for (const a of arts) {
+                    const t = new Date(a.updatedAt).getTime();
+                    if (t > lastActivity) lastActivity = t;
+                }
+            }
+            proj.sources = [...sources];
+            proj.lastActivity = lastActivity > 0 ? new Date(lastActivity).toISOString() : null;
+        }
+        return projects;
+    }
+
+    function getProjectDetail(projectId) {
+        const project = dbGet('SELECT * FROM projects WHERE id = ?', [projectId]);
+        if (!project) return null;
+
+        const links = dbAll('SELECT * FROM project_sessions WHERE project_id = ? ORDER BY added_at DESC', [projectId]);
+        const all = scanBrainArtifacts();
+
+        const sessions = [];
+        for (const link of links) {
+            const artifacts = all.filter(a => a.conversationId === link.conversation_id);
+            const latest = artifacts.reduce((max, a) => {
+                const t = new Date(a.updatedAt).getTime();
+                return t > max ? t : max;
+            }, 0);
+
+            sessions.push({
+                conversationId: link.conversation_id,
+                source: link.source || 'antigravity',
+                autoLinked: !!link.auto_linked,
+                addedAt: link.added_at,
+                artifacts: artifacts.map(a => ({
+                    file: a.file,
+                    heading: a.heading,
+                    type: a.type,
+                    summary: a.summary,
+                    updatedAt: a.updatedAt,
+                })),
+                lastActivity: latest > 0 ? new Date(latest).toISOString() : null,
+            });
+        }
+
+        sessions.sort((a, b) => {
+            const ta = a.lastActivity ? new Date(a.lastActivity).getTime() : 0;
+            const tb = b.lastActivity ? new Date(b.lastActivity).getTime() : 0;
+            return tb - ta;
+        });
+
+        return { ...project, sessions };
+    }
+
+    function linkSessionToProject(projectId, conversationId, source = 'antigravity') {
+        dbRun(`INSERT OR IGNORE INTO project_sessions (project_id, conversation_id, source, added_at, auto_linked)
+               VALUES (?, ?, ?, ?, 0)`, [projectId, conversationId, source, Date.now()]);
+        dbRun('UPDATE projects SET updated_at = ? WHERE id = ?', [Date.now(), projectId]);
+    }
+
+    function unlinkSession(projectId, conversationId) {
+        dbRun('DELETE FROM project_sessions WHERE project_id = ? AND conversation_id = ?', [projectId, conversationId]);
+    }
+
+    function deleteProject(projectId) {
+        dbRun('DELETE FROM project_sessions WHERE project_id = ?', [projectId]);
+        dbRun('DELETE FROM projects WHERE id = ?', [projectId]);
+    }
+
+    function updateProject(projectId, fields) {
+        const allowed = ['name', 'description', 'color', 'icon'];
+        const sets = [];
+        const vals = [];
+        for (const [k, v] of Object.entries(fields)) {
+            if (allowed.includes(k)) { sets.push(`${k} = ?`); vals.push(v); }
+        }
+        if (sets.length === 0) return;
+        sets.push('updated_at = ?');
+        vals.push(Date.now());
+        vals.push(projectId);
+        dbRun(`UPDATE projects SET ${sets.join(', ')} WHERE id = ?`, vals);
+    }
+
+    function autoSuggestProject(conversationId) {
+        const all = scanBrainArtifacts();
+        const arts = all.filter(a => a.conversationId === conversationId);
+        if (arts.length === 0) return [];
+
+        const sessionText = arts.map(a => [a.heading || '', a.summary || ''].join(' ')).join(' ').toLowerCase();
+        const projects = dbAll('SELECT id, name, description FROM projects');
+
+        const matches = [];
+        for (const proj of projects) {
+            const words = proj.name.toLowerCase().replace(/[_-]/g, ' ').split(/\s+/).filter(w => w.length > 2);
+            const hits = words.filter(w => sessionText.includes(w));
+            if (hits.length >= 2 || hits.some(w => w.length >= 6)) {
+                matches.push({ projectId: proj.id, name: proj.name, score: hits.length });
+            }
+        }
+        return matches.sort((a, b) => b.score - a.score);
+    }
+
+    // ── Auto-Classify Projects (Ollama-powered) ─────────────────
+
+    async function autoClassifyProjects(vaultAI) {
+        if (!vaultAI || !vaultAI.isAvailable || !vaultAI.isAvailable()) {
+            console.log('[Projects] Ollama offline — skipping auto-classify');
+            return { created: 0, linked: 0 };
+        }
+
+        const all = scanBrainArtifacts();
+        if (all.length === 0) return { created: 0, linked: 0 };
+
+        // One-time cleanup: strip garbled "Line 2:", "line_2:" prefixes from prior LLM output
+        try {
+            dbRun(`UPDATE projects SET name = TRIM(SUBSTR(name, INSTR(name, ':') + 2))
+                   WHERE (name LIKE 'Line %:%' OR name LIKE 'line_%:%') AND INSTR(name, ':') > 0`);
+            // Remove junk action items from fiction/roleplay captures
+            dbRun(`DELETE FROM action_items WHERE
+                   description LIKE '%SYSTEM_STATE_OPTIMIZATION%'
+                   OR description LIKE '%persona_buffer%'
+                   OR description LIKE '%RECURSIVE_DEREFERENCE%'
+                   OR description LIKE '%entanglement%file%'
+                   OR description LIKE '%shared_entropy%'`);
+        } catch (e) { console.warn('[Projects] DB cleanup:', e.message); }
+
+        // Get all sessions already linked to a project
+        const linked = new Set(
+            dbAll('SELECT conversation_id FROM project_sessions').map(r => r.conversation_id)
+        );
+
+        // Find unlinked sessions (group artifacts by conversation)
+        const convMap = {};
+        for (const a of all) {
+            if (linked.has(a.conversationId)) continue;
+            if (!convMap[a.conversationId]) convMap[a.conversationId] = { artifacts: [], source: a.source || 'antigravity' };
+            convMap[a.conversationId].artifacts.push(a);
+        }
+
+        const unlinkedConvs = Object.entries(convMap);
+        if (unlinkedConvs.length === 0) {
+            console.log('[Projects] All sessions already linked');
+            return { created: 0, linked: 0 };
+        }
+
+        // Limit to 10 per scan to avoid hammering Ollama
+        const batch = unlinkedConvs.slice(0, 10);
+        let created = 0, linkedCount = 0;
+        const existingProjects = dbAll('SELECT id, name FROM projects');
+
+        for (const [convId, data] of batch) {
+            try {
+                // Build text from session artifacts
+                const text = data.artifacts.map(a => 
+                    [a.heading || '', a.summary || ''].join(' ')
+                ).join('\n').trim();
+                
+                if (text.length < 20) continue; // Skip near-empty sessions
+
+                // Ask Ollama to classify the topic
+                const topic = await vaultAI.classifyCaptureTopic(text);
+                if (!topic || !topic.title) continue;
+
+                const projectName = topic.title.substring(0, 80);
+
+                // Fuzzy match against existing projects
+                const nameWords = projectName.toLowerCase().replace(/[_-]/g, ' ').split(/\s+/).filter(w => w.length > 2);
+                let matchedProject = null;
+
+                for (const proj of existingProjects) {
+                    const projWords = proj.name.toLowerCase().replace(/[_-]/g, ' ').split(/\s+/).filter(w => w.length > 2);
+                    const overlap = nameWords.filter(w => projWords.some(pw => pw.includes(w) || w.includes(pw)));
+                    if (overlap.length >= 2 || overlap.some(w => w.length >= 6)) {
+                        matchedProject = proj;
+                        break;
+                    }
+                }
+
+                if (matchedProject) {
+                    // Link to existing project
+                    dbRun('INSERT OR IGNORE INTO project_sessions (project_id, conversation_id, source, added_at, auto_linked) VALUES (?, ?, ?, ?, 1)',
+                        [matchedProject.id, convId, data.source, Date.now()]);
+                    dbRun('UPDATE projects SET updated_at = ? WHERE id = ?', [Date.now(), matchedProject.id]);
+                    linkedCount++;
+                } else {
+                    // Create new project and link
+                    const now = Date.now();
+                    dbRun('INSERT OR IGNORE INTO projects (name, description, color, icon, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
+                        [projectName, 'Auto-created by AI', '#D4AF37', '🤖', now, now]);
+                    const row = dbGet('SELECT last_insert_rowid() as id');
+                    if (row && row.id) {
+                        dbRun('INSERT OR IGNORE INTO project_sessions (project_id, conversation_id, source, added_at, auto_linked) VALUES (?, ?, ?, ?, 1)',
+                            [row.id, convId, data.source, Date.now()]);
+                        existingProjects.push({ id: row.id, name: projectName }); // Add so subsequent matches work
+                        created++;
+                        linkedCount++;
+                    }
+                }
+            } catch (e) {
+                console.warn('[Projects] Auto-classify error for', convId.substring(0, 8), ':', e.message);
+            }
+        }
+
+        console.log('[Projects] Auto-classify: ' + created + ' projects created, ' + linkedCount + ' sessions linked (' + (unlinkedConvs.length - batch.length) + ' remaining)');
+        return { created, linked: linkedCount, remaining: unlinkedConvs.length - batch.length };
+    }
+
     // ── Public API ───────────────────────────────────────────────
 
     return {
@@ -2102,5 +2329,16 @@ module.exports = function createJournalEngine(deps) {
         getKIHealth,
         exportKI,
         exportDailyDigest,
+        // v5 — Cross-Model Project Workspaces
+        createProject,
+        getProjects,
+        getProjectDetail,
+        linkSessionToProject,
+        unlinkSession,
+        deleteProject,
+        updateProject,
+        autoSuggestProject,
+        autoClassifyProjects,
     };
 };
+

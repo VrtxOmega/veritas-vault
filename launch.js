@@ -22,7 +22,9 @@ console.log('[VeritasVault] Igniting...');
 const child = spawn(electronPath, args, {
     cwd: __dirname,
     env: cleanEnv,
-    stdio: 'inherit',
+    detached: true,
+    stdio: 'ignore',
 });
+child.unref();
 
 child.on('close', (code) => process.exit(code || 0));

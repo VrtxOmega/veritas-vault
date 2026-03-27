@@ -17,7 +17,7 @@
  * Examina omnia, venerare nihil, pro te cogita.
  */
 
-const { app, BrowserWindow, Tray, Menu, ipcMain, shell, clipboard, nativeImage } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain, shell, clipboard, nativeImage, globalShortcut } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -95,20 +95,21 @@ function initPaths() {
 // ── Data Backup ──────────────────────────────────────────────
 function autoBackup() {
     try {
-        if (!fs.existsSync(DB_PATH)) return;
+        const actualDbPath = require('./db').getDbPath();
+        if (!actualDbPath || !fs.existsSync(actualDbPath)) return;
         const backupDir = path.join(DATA_DIR, 'backups');
         if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
 
         const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
         const backupPath = path.join(backupDir, `vault-${timestamp}.db`);
-        const latestPath = path.join(DATA_DIR, 'vault.db.bak');
+        const latestPath = path.join(DATA_DIR, 'vault.native.bak');
 
         // Always keep latest .bak
-        fs.copyFileSync(DB_PATH, latestPath);
+        fs.copyFileSync(actualDbPath, latestPath);
 
         // Daily backup (skip if today's already exists)
         if (!fs.existsSync(backupPath)) {
-            fs.copyFileSync(DB_PATH, backupPath);
+            fs.copyFileSync(actualDbPath, backupPath);
             console.log(`[Vault] Auto-backup: ${backupPath}`);
         }
 
@@ -212,6 +213,8 @@ function createWindow() {
         mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
         mainWindow.once('ready-to-show', () => {
             mainWindow.show();
+            // Automatically open DevTools in detached window for QA
+            // mainWindow.webContents.openDevTools({ mode: 'detach' }); // Ctrl+Shift+I to open
             resolve();
         });
 
@@ -239,6 +242,14 @@ function createWindow() {
         });
         mainWindow.webContents.on('responsive', () => {
             console.log('[Vault] Window responsive again');
+        });
+
+        // Developer Tools shortcut
+        mainWindow.webContents.on('before-input-event', (event, input) => {
+            if (input.control && input.shift && input.key.toLowerCase() === 'i') {
+                mainWindow.webContents.toggleDevTools();
+                event.preventDefault();
+            }
         });
     });
 }
@@ -270,6 +281,22 @@ function createTray() {
             else { mainWindow.show(); mainWindow.focus(); }
         }
     });
+
+    // ── Global Hotkey: Ctrl+Shift+V summons/hides Vault from anywhere ──
+    try {
+        globalShortcut.register('CommandOrControl+Shift+V', () => {
+            if (!mainWindow) return;
+            if (mainWindow.isVisible() && mainWindow.isFocused()) {
+                mainWindow.hide();
+            } else {
+                mainWindow.show();
+                mainWindow.focus();
+            }
+        });
+        console.log('[Vault] Global hotkey Ctrl+Shift+V registered');
+    } catch (e) {
+        console.warn('[Vault] Could not register global hotkey:', e.message);
+    }
 }
 
 function createTrayIconBuffer() {
@@ -567,6 +594,19 @@ function registerIPC() {
     });
 
     // Capture token (for extension configuration)
+    // ── Project Workspaces ──
+    ipcMain.handle('vault:create-project', (_, name, desc, color, icon) => journal.createProject(name, desc, color, icon));
+    ipcMain.handle('vault:projects', () => {
+        try { return journal.getProjects(); }
+        catch (e) { console.error('[Projects] getProjects error:', e.message, e.stack?.split('\n').slice(0,3).join('\n')); return []; }
+    });
+    ipcMain.handle('vault:project-detail', (_, id) => journal.getProjectDetail(id));
+    ipcMain.handle('vault:link-session', (_, pid, cid, src) => journal.linkSessionToProject(pid, cid, src));
+    ipcMain.handle('vault:unlink-session', (_, pid, cid) => journal.unlinkSession(pid, cid));
+    ipcMain.handle('vault:delete-project', (_, id) => journal.deleteProject(id));
+    ipcMain.handle('vault:update-project', (_, id, fields) => journal.updateProject(id, fields));
+    ipcMain.handle('vault:suggest-project', (_, cid) => journal.autoSuggestProject(cid));
+
     ipcMain.handle('vault:get-capture-token', () => captureServer.getToken());
 }
 
@@ -582,7 +622,14 @@ if (!gotLock) {
     app.quit();
 } else {
     app.on('second-instance', () => {
-        if (mainWindow) { mainWindow.restore(); mainWindow.show(); mainWindow.focus(); }
+        if (mainWindow) {
+            if (mainWindow.isMinimized()) mainWindow.restore();
+            mainWindow.setAlwaysOnTop(true);
+            mainWindow.show();
+            mainWindow.setAlwaysOnTop(false);
+            app.focus();
+            mainWindow.focus();
+        }
     });
 
     app.whenReady().then(async () => {
@@ -597,10 +644,6 @@ if (!gotLock) {
             watchDirs: [ANTIGRAVITY_ROOT],
             theme: 'obsidian',
         });
-
-        // ── Initialize database ──────────────────────────────
-        await initDatabase(DATA_DIR, DB_PATH);
-        autoBackup();
 
         // ── Initialize domain modules ────────────────────────
         const crypto = require('crypto');
@@ -644,7 +687,6 @@ if (!gotLock) {
         const dbModule = require('./db');
         const ragDataDir = path.join(app.getPath('userData'), 'vault_data');
         if (!fs.existsSync(ragDataDir)) fs.mkdirSync(ragDataDir, { recursive: true });
-        vaultRAG.init(dbModule, ragDataDir);
         followupEngine.init(dbModule, journal);
 
         registerIPC();
@@ -667,7 +709,34 @@ if (!gotLock) {
         });
         splashWin.webContents.setMaxListeners(30); // Prevent MaxListenersExceeded warning
         splashWin.loadFile(path.join(__dirname, 'renderer', 'splash.html'));
-        splashWin.once('ready-to-show', () => splashWin.show());
+        
+        // Explicitly wait for the splash screen to mount and paint before blocking the thread
+        await new Promise(resolve => {
+            splashWin.once('ready-to-show', () => {
+                splashWin.show();
+                setTimeout(resolve, 100);
+            });
+        });
+
+        // ── Load Database during splash ──────────────────────
+        if (splashWin && !splashWin.isDestroyed()) {
+            splashWin.webContents.executeJavaScript(
+                `if(window.updateProgress){window.updateProgress(5,'Mounting Native SQLite Engine (WAL + FTS5)...')}`
+            ).catch(() => {});
+        }
+        await initDatabase(DATA_DIR, DB_PATH);
+        autoBackup();
+
+        // ── Load RAG Index during splash (Background Stream) ─
+        const ragProgress = (pct, msg) => {
+            if (splashWin && !splashWin.isDestroyed()) {
+                const safeMsg = msg.replace(/'/g, "\\'");
+                splashWin.webContents.executeJavaScript(
+                    `if(window.updateProgress){window.updateProgress(${pct},'${safeMsg}')}`
+                ).catch(() => {});
+            }
+        };
+        vaultRAG.init(dbModule, ragDataDir, ragProgress);
 
         console.log('[Vault] Starting corpus scan...');
         const t0 = Date.now();
@@ -730,6 +799,22 @@ if (!gotLock) {
             }
         }, 5000); // 5s delay to let window settle
 
+        // ── Auto-Classify Projects (Ollama-powered) ─────────────
+        setTimeout(async () => {
+            try {
+                const vaultAI = require('./vault-ai');
+                const health = await vaultAI.checkOllamaHealth();
+                if (health) {
+                    const result = await journal.autoClassifyProjects(vaultAI);
+                    if (result.created > 0 || result.linked > 0) {
+                        console.log('[Vault] Auto-classify: ' + result.created + ' projects created, ' + result.linked + ' sessions linked');
+                    }
+                } else {
+                    console.log('[Vault] Ollama offline — skipping project auto-classify');
+                }
+            } catch (e) { console.warn('[Vault] Auto-classify error:', e.message); }
+        }, 25000); // Run after RAG + follow-ups settle
+
         // ── Initial follow-up scan ───────────────────────────
         setTimeout(async () => {
             try {
@@ -770,6 +855,54 @@ if (!gotLock) {
                 }
             } catch (e) { console.warn('[Vault] Capture health check:', e.message); }
         }, 60000);
+
+        // ── NAEF Telemetry Health Broadcaster (every 15s) ────────────
+        const broadcastHealth = async () => {
+            if (!mainWindow || mainWindow.isDestroyed()) return;
+            const health = {
+                db: 'offline',
+                ollama: 'offline',
+                capture: 'offline',
+                watcher: 'offline',
+            };
+
+            // Database health
+            try {
+                const dbModule = require('./db');
+                const row = dbModule.dbGet('SELECT COUNT(*) as c FROM documents');
+                health.db = (row && row.c >= 0) ? 'online' : 'degraded';
+            } catch { health.db = 'offline'; }
+
+            // Ollama health (non-blocking HTTP ping)
+            try {
+                const http = require('http');
+                await new Promise((resolve) => {
+                    const req = http.get('http://127.0.0.1:11434/api/tags', { timeout: 3000 }, (res) => {
+                        health.ollama = (res.statusCode === 200) ? 'online' : 'degraded';
+                        res.resume();
+                        resolve();
+                    });
+                    req.on('error', () => { health.ollama = 'offline'; resolve(); });
+                    req.on('timeout', () => { req.destroy(); health.ollama = 'offline'; resolve(); });
+                });
+            } catch { health.ollama = 'offline'; }
+
+            // Capture server health
+            try {
+                health.capture = (captureServer && captureServer.isRunning && captureServer.isRunning()) ? 'online' : 'degraded';
+            } catch { health.capture = 'degraded'; }
+
+            // File watcher health
+            try {
+                health.watcher = (fileWatcher && fileWatcher.isWatching && fileWatcher.isWatching()) ? 'online' : 'degraded';
+            } catch { health.watcher = 'degraded'; }
+
+            mainWindow.webContents.send('vault:telemetry', health);
+        };
+
+        // Initial broadcast after 3s, then every 15s
+        setTimeout(broadcastHealth, 3000);
+        setInterval(broadcastHealth, 15000);
     });
 
     app.on('window-all-closed', () => { /* stay in tray */ });
@@ -777,6 +910,8 @@ if (!gotLock) {
     app.on('before-quit', () => {
         isQuitting = true;
         console.log('[Vault] Graceful shutdown started...');
+
+        globalShortcut.unregisterAll();
 
         saveWindowState();
         fileWatcher?.stop();

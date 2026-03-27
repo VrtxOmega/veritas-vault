@@ -41,13 +41,13 @@ let _chatHistory = [];      // [{role, content, sources?, timestamp}]
 let _dbRef = null;          // reference to db module
 let _dataDir = null;        // canonical directory for index persistence
 
-function init(dbModule, dataDir) {
+function init(dbModule, dataDir, onProgress) {
     _dbRef = dbModule;
     if (dataDir) _dataDir = dataDir;
 
-    // Try loading saved index immediately
-    if (_dataDir && loadIndex(_dataDir)) {
-        console.log('[RAG] Loaded saved index on init — skipping cold build');
+    // Fast-boot: parse metadata instantly, defer massive buffer read
+    if (_dataDir) {
+        loadIndexBackground(_dataDir, onProgress);
     }
 }
 
@@ -364,28 +364,61 @@ function saveIndex(dataDir) {
     }
 }
 
-function loadIndex(dataDir) {
+function loadIndexBackground(dataDir, onProgress) {
     try {
-        if (dataDir) _dataDir = dataDir; // Store for consistent save path
+        if (dataDir) _dataDir = dataDir; 
         const dir = _dataDir || dataDir;
         if (!dir) return false;
+        
         const metaPath = path.join(dir, 'rag_meta.json');
         const vecPath = path.join(dir, 'rag_vectors.bin');
         if (!fs.existsSync(metaPath) || !fs.existsSync(vecPath)) return false;
 
+        // 1. Sync load metadata (Fast, ~1s)
+        console.log('[RAG] Loading metadata...');
         const meta = JSON.parse(fs.readFileSync(metaPath, 'utf-8'));
-        const vecBuf = fs.readFileSync(vecPath);
-        _vectors = new Float32Array(vecBuf.buffer, vecBuf.byteOffset, vecBuf.byteLength / 4);
-        _docMeta = meta.meta.map((m, i) => ({
+        _docMeta = meta.meta.map(m => ({
             ...m,
-            chunkText: '', // Will be loaded on demand from DB
+            chunkText: '', 
         }));
         _indexBuildTime = meta.builtAt;
-        _indexBuilt = true;
-        console.log(`[RAG] Loaded index: ${_docMeta.length} chunks from disk`);
+
+        // 2. Fast off-heap allocation (OS lazy pages, 0ms)
+        const stats = fs.statSync(vecPath);
+        const buffer = Buffer.alloc(stats.size); 
+        _vectors = new Float32Array(buffer.buffer, buffer.byteOffset, buffer.byteLength / 4);
+        _indexBuilt = true; 
+
+        // 3. Silently stream the 1.8GB file into the buffer directly using C++ IO handles
+        // Chunk sizes keep the UI thread buttery smooth (60fps)
+        const fd = fs.openSync(vecPath, 'r');
+        const CHUNK_SIZE = 16 * 1024 * 1024; // 16MB
+        let position = 0;
+
+        const readLoop = async () => {
+            while (position < stats.size) {
+                const bytesToRead = Math.min(CHUNK_SIZE, stats.size - position);
+                fs.readSync(fd, buffer, position, bytesToRead, position);
+                position += bytesToRead;
+                
+                if (onProgress) {
+                    const pct = Math.round((position / stats.size) * 100);
+                    onProgress(pct, `Loading AI Index: ${pct}%`);
+                }
+                
+                // Absolute yield to Main Thread event loop per chunk (using setTimeout to allow network I/O)
+                await new Promise(resolve => setTimeout(resolve, 5));
+            }
+            fs.closeSync(fd);
+            console.log(`[RAG] Streaming load complete: ${_docMeta.length} chunks initialized into memory.`);
+        };
+
+        // Fire and forget background routine
+        readLoop().catch(e => console.error('[RAG] Background stream error:', e));
+
         return true;
     } catch (e) {
-        console.error('[RAG] Load error:', e.message);
+        console.error('[RAG] Background load error:', e.message);
         return false;
     }
 }
@@ -565,7 +598,7 @@ module.exports = {
     init,
     checkEmbedModel,
     buildIndex,
-    loadIndex,
+    loadIndexBackground,
     retrieveChunks,
     chat,
     getChatHistory,
