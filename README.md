@@ -1,4 +1,5 @@
 <div align="center">
+  <img src="https://raw.githubusercontent.com/VrtxOmega/Gravity-Omega/master/omega_icon.png" width="100" alt="VERITAS" />
   <h1>VERITAS VAULT</h1>
   <p><strong>High-Assurance AI Knowledge Engine</strong></p>
   <p><em>Auto-capture, organize, and intelligence your developer work.</em></p>
