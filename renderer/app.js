@@ -5,8 +5,8 @@
  */
 
 // ── Canonical Source Colors ──────────────────────────────────
-const SOURCE_COLORS = { antigravity: '#D4AF37', chatgpt: '#10A37F', claude: '#CC785C', gemini: '#4285F4', manual: '#888', test: '#888' };
-const SOURCE_LABELS = { antigravity: 'AG', chatgpt: 'GPT', claude: 'CLA', gemini: 'GEM', manual: 'MAN', test: 'TST' };
+const SOURCE_COLORS = { antigravity: '#D4AF37', chatgpt: '#10A37F', claude: '#CC785C', gemini: '#4285F4', hermes: '#00FF00', manual: '#888', test: '#888' };
+const SOURCE_LABELS = { antigravity: 'AG', chatgpt: 'GPT', claude: 'CLA', gemini: 'GEM', hermes: 'HER', manual: 'MAN', test: 'TST' };
 
 // ── State ────────────────────────────────────────────────────
 let loadedDays = 0;
