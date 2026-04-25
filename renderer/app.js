@@ -1540,13 +1540,10 @@ function setupEventDelegation() {
             case 'navigate-action-item': {
                 // Skip if the click was on the ✓ button (handled by complete-action)
                 if (e.target.closest('.action-done-btn')) break;
-                const sourceId = actionEl.dataset.sourceId;
-                if (sourceId) {
-                    navigateWithHighlight('tasks', `.task-group[data-conv-id="${sourceId}"]`, 'threads', sourceId);
-                } else {
-                    switchPanel('tasks');
-                    showBreadcrumb('tasks');
-                }
+                // Action items are extracted from sessions — they don't have
+                // navigable artifacts. Just switch to the tasks panel.
+                switchPanel('tasks');
+                showBreadcrumb('tasks');
                 break;
             }
             case 'navigate-weekly-project': {
