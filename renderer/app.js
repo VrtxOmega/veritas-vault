@@ -1507,21 +1507,27 @@ function setupEventDelegation() {
             case 'complete-action': {
                 e.stopPropagation();
                 const actionId = actionEl.dataset.actionId;
+                console.log('[Vault] complete-action clicked, id:', actionId);
                 if (actionId) {
+                    const brief = document.getElementById('morning-brief');
+                    console.log('[Vault] morning-brief element:', brief ? 'found' : 'NOT FOUND');
+                    const oldPanel = brief ? brief.querySelector('.action-items-panel') : null;
+                    console.log('[Vault] old action-items-panel:', oldPanel ? 'found' : 'NOT FOUND');
                     window.vault.completeActionItem(parseInt(actionId)).then(() => {
+                        console.log('[Vault] completeActionItem resolved');
                         return window.vault.getActionItems('open');
                     }).then(freshItems => {
-                        const brief = document.getElementById('morning-brief');
-                        if (brief) {
-                            const oldPanel = brief.querySelector('.action-items-panel');
-                            if (oldPanel) {
-                                const newHtml = renderActionItems(freshItems);
-                                const temp = document.createElement('div');
-                                temp.innerHTML = newHtml;
-                                const newPanel = temp.querySelector('.action-items-panel');
-                                if (newPanel) {
-                                    oldPanel.replaceWith(newPanel);
-                                }
+                        console.log('[Vault] getActionItems resolved, count:', freshItems?.length);
+                        if (brief && oldPanel) {
+                            const newHtml = renderActionItems(freshItems);
+                            const temp = document.createElement('div');
+                            temp.innerHTML = newHtml;
+                            const newPanel = temp.querySelector('.action-items-panel');
+                            if (newPanel) {
+                                oldPanel.replaceWith(newPanel);
+                                console.log('[Vault] panel replaced successfully');
+                            } else {
+                                console.error('[Vault] newPanel was null, newHtml was:', newHtml);
                             }
                         }
                     }).catch(err => {
