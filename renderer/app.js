@@ -210,12 +210,17 @@ function renderActionItems(items) {
 
     const itemsHtml = items.slice(0, 8).map(item => {
         const color = priorityColors[item.priority] || '#888';
-        const icon = typeIcons[item.type] || '📌';
+        const isDone = item.status === 'done';
+        const icon = isDone ? '✅' : (typeIcons[item.type] || '📌');
+        const descClass = isDone ? 'action-desc done' : 'action-desc';
+        const doneBtn = isDone
+            ? ''
+            : `<button class="action-done-btn" data-action="complete-action" data-action-id="${item.id}" title="Mark done">✓</button>`;
         return `<div class="action-item" id="action-${item.id}" data-action="navigate-action-item" data-source-id="${item.source_id || ''}">
             <span class="action-icon">${icon}</span>
-            <span class="action-desc">${esc(item.description)}</span>
+            <span class="${descClass}">${esc(item.description)}</span>
             <span class="action-priority" style="color:${color}">${item.priority || ''}</span>
-            <button class="action-done-btn" data-action="complete-action" data-action-id="${item.id}" title="Mark done">✓</button>
+            ${doneBtn}
         </div>`;
     }).join('');
 

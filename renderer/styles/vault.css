@@ -2761,6 +2761,11 @@ body {
     color: var(--text-secondary, #bbb);
     line-height: 1.4;
 }
+.action-desc.done {
+    text-decoration: line-through;
+    color: var(--text-tertiary, #666) !important;
+    opacity: 0.7;
+}
 
 .action-priority {
     font-size: 9px;
