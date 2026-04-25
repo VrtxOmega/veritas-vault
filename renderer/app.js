@@ -323,12 +323,12 @@ function renderDayCard(digest, dateObj) {
         const srcSessions = groups[src] || [];
         if (srcSessions.length === 0) continue;
 
-        if (src === 'antigravity') {
-            // AG sessions: show expanded (they have meaningful titles)
+        if (src === 'antigravity' || src === 'hermes-agent') {
+            // AG + Hermes sessions: show expanded (they have meaningful titles)
             sessionsHtml += srcSessions.map(s => renderSessionCard(s)).join('');
         } else {
             // Capture sessions: collapsible accordion
-            const labels = { gemini: 'Gemini', chatgpt: 'ChatGPT', claude: 'Claude' };
+            const labels = { gemini: 'Gemini', chatgpt: 'ChatGPT', claude: 'Claude', 'hermes-agent': 'Hermes' };
             const colors = SOURCE_COLORS;
             const label = labels[src] || src;
             const color = colors[src] || '#888';
@@ -373,7 +373,7 @@ function renderSessionCard(session) {
     const pinClass = session.pinned ? 'pinned' : '';
     const source = session.source || 'antigravity';
     const sourceColors = SOURCE_COLORS;
-    const sourceLabels = { antigravity: 'AG', gemini: 'Gem', chatgpt: 'GPT', manual: '✎' };
+    const sourceLabels = { antigravity: 'AG', gemini: 'Gem', chatgpt: 'GPT', claude: 'CLA', 'hermes-agent': 'HER', manual: '✎' };
     const srcColor = sourceColors[source] || '#888';
     const srcLabel = sourceLabels[source] || source.substring(0, 3);
 
@@ -654,7 +654,7 @@ async function loadThreads() {
         }
 
         const badgeColors = SOURCE_COLORS;
-        const badgeLabels = { antigravity: 'AG', gemini: 'GEM', chatgpt: 'GPT' };
+        const badgeLabels = { antigravity: 'AG', gemini: 'GEM', chatgpt: 'GPT', claude: 'CLA', 'hermes-agent': 'HER' };
 
         list.innerHTML = threads.map(t => {
             const badges = (t.sources || []).map(s => {
@@ -791,7 +791,7 @@ async function expandThread(topic) {
         if (!detail) { detailEl.innerHTML = '<div class="empty-text">Could not load thread detail</div>'; return; }
 
         const badgeColors = SOURCE_COLORS;
-        const badgeLabels = { antigravity: 'AG', gemini: 'Gem', chatgpt: 'GPT' };
+        const badgeLabels = { antigravity: 'AG', gemini: 'Gem', chatgpt: 'GPT', claude: 'CLA', 'hermes-agent': 'HER' };
 
         // Full summary
         const summaryHtml = `
