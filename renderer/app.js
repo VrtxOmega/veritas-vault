@@ -293,7 +293,7 @@ function renderDayCard(digest, dateObj) {
         const { sourceBreakdown, topProjects } = digest.productionSummary;
         const sourceChips = Object.entries(sourceBreakdown).map(([src, count]) => {
             const colors = SOURCE_COLORS;
-            const labels = { antigravity: 'AG', gemini: 'Gemini', chatgpt: 'ChatGPT' };
+            const labels = SOURCE_LABELS;
             return `<span class="source-chip" style="border-color:${colors[src] || '#555'}">${labels[src] || src} <strong>${count}</strong></span>`;
         }).join('');
         const projectChips = topProjects.map(p => `<span class="topic-pill">${esc(p)}</span>`).join('');
@@ -1518,6 +1518,9 @@ function setupEventDelegation() {
                             tempDiv.innerHTML = newHtml;
                             panel.innerHTML = tempDiv.querySelector('.action-items-panel').innerHTML;
                         }
+                    }).catch(err => {
+                        console.error('[Vault] complete-action failed:', err);
+                        alert('Could not complete action: ' + (err.message || String(err)));
                     });
                 }
                 break;

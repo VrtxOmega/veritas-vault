@@ -159,6 +159,54 @@ module.exports = function createJournalEngine(deps) {
         _brainCache = results;
         _brainCacheTime = Date.now();
 
+        // Also scan Hermes agent sessions, artifacts, and knowledge under hermes/ subdirectory
+        const hermesRoot = path.join(ANTIGRAVITY_ROOT, 'hermes');
+        if (fs.existsSync(hermesRoot)) {
+            for (const subDir of ['sessions', 'artifacts', 'knowledge']) {
+                const hermesSubPath = path.join(hermesRoot, subDir);
+                if (!fs.existsSync(hermesSubPath)) continue;
+                try {
+                    const dateDirs = fs.readdirSync(hermesSubPath, { withFileTypes: true });
+                    for (const dateDir of dateDirs) {
+                        if (!dateDir.isDirectory()) continue;
+                        const datePath = path.join(hermesSubPath, dateDir.name);
+                        let files;
+                        try { files = fs.readdirSync(datePath); } catch { continue; }
+                        const metaFiles = files.filter(f => f.endsWith('.metadata.json') && !f.startsWith('.'));
+                        for (const metaFile of metaFiles) {
+                            try {
+                                const raw = fs.readFileSync(path.join(datePath, metaFile), 'utf-8');
+                                const meta = JSON.parse(raw);
+                                const artifactFile = metaFile.replace('.metadata.json', '');
+                                const absPath = path.join(datePath, artifactFile);
+                                let heading = null;
+                                if (fs.existsSync(absPath)) {
+                                    try {
+                                        const content = fs.readFileSync(absPath, 'utf-8');
+                                        const m = content.match(/^#\s+(.+)/m);
+                                        if (m) heading = m[1].trim();
+                                    } catch { /* no heading */ }
+                                }
+                                const effectiveTime = meta.updatedAt
+                                    || (fs.existsSync(absPath) ? fs.statSync(absPath).mtime.toISOString() : new Date().toISOString());
+                                results.push({
+                                    conversationId: meta.session_id || `${subDir}:${artifactFile}`,
+                                    file: artifactFile,
+                                    heading: heading || meta.task || meta.title || subDir,
+                                    type: subDir === 'sessions' ? 'Session' : subDir === 'artifacts' ? 'Artifact' : 'Knowledge',
+                                    summary: meta.summary || meta.task || meta.outcome || '',
+                                    updatedAt: effectiveTime,
+                                    version: meta.version || '1',
+                                    absPath,
+                                    source: meta.source || 'hermes-agent',
+                                });
+                            } catch { continue; }
+                        }
+                    }
+                } catch { continue; }
+            }
+        }
+
         // Also scan captured sessions (Gemini, ChatGPT, etc.)
         if (capturesDir && fs.existsSync(capturesDir)) {
             try {
