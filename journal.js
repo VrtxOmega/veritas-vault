@@ -1990,10 +1990,16 @@ module.exports = function createJournalEngine(deps) {
     }
 
     function completeActionItem(id) {
+        console.log('[Journal] completeActionItem called with id:', id);
         try {
             dbRun('UPDATE action_items SET status = "done" WHERE id = ?', [id]);
+            const after = dbGet('SELECT id, status FROM action_items WHERE id = ?', [id]);
+            console.log('[Journal] after UPDATE:', after);
             return true;
-        } catch { return false; }
+        } catch (e) {
+            console.error('[Journal] completeActionItem error:', e.message);
+            return false;
+        }
     }
 
     // ── Cross-Session Continuity ─────────────────────────────────

@@ -183,7 +183,8 @@ async function performAsyncMigration(wasmDbPath) {
 
         // Extract all data from WASM tables
         const tables = ['documents', 'chunks', 'timeline', 'ingestion_receipts', 
-                        'tags', 'pinned_sessions', 'quick_notes', 'journal_audit'];
+                        'tags', 'pinned_sessions', 'quick_notes', 'journal_audit',
+                        'action_items'];
 
         for (const table of tables) {
             try {
