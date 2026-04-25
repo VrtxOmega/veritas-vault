@@ -1508,9 +1508,17 @@ function setupEventDelegation() {
                 e.stopPropagation();
                 const actionId = actionEl.dataset.actionId;
                 if (actionId) {
-                    window.vault.completeActionItem(parseInt(actionId));
-                    const item = document.getElementById(`action-${actionId}`);
-                    if (item) { item.style.opacity = '0.3'; item.style.textDecoration = 'line-through'; }
+                    window.vault.completeActionItem(parseInt(actionId)).then(() => {
+                        return window.vault.getActionItems('open');
+                    }).then(freshItems => {
+                        const panel = document.querySelector('.action-items-panel');
+                        if (panel) {
+                            const newHtml = renderActionItems(freshItems);
+                            const tempDiv = document.createElement('div');
+                            tempDiv.innerHTML = newHtml;
+                            panel.innerHTML = tempDiv.querySelector('.action-items-panel').innerHTML;
+                        }
+                    });
                 }
                 break;
             }
