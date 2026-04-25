@@ -1241,7 +1241,7 @@ module.exports = function createJournalEngine(deps) {
         auditLog('session_detail', convId);
         return {
             conversationId: convId,
-            artifacts: artifacts.map(a => ({ file: a.file, type: a.type, summary: a.summary, heading: a.heading, updatedAt: a.updatedAt })),
+            artifacts: artifacts.map(a => ({ file: a.file, type: a.type, summary: a.summary, heading: a.heading, updatedAt: a.updatedAt, absPath: a.absPath })),
             topics,
             pinned,
         };
@@ -1249,7 +1249,7 @@ module.exports = function createJournalEngine(deps) {
 
     // ── Read Artifact Content ────────────────────────────────────
 
-    function readArtifact(convId, file) {
+    function readArtifact(convId, file, absPath) {
         let filePath;
         if (convId.includes(':')) {
             // Captured session: convId = "source:filename"
@@ -1257,6 +1257,9 @@ module.exports = function createJournalEngine(deps) {
             const target = file || captureFile;
             const safeName = target.replace(/\.\./g, '').replace(/[/\\]/g, '');
             filePath = path.join(capturesDir, source, safeName);
+        } else if (absPath) {
+            // Hermes / brain artifact with absolute path
+            filePath = absPath;
         } else {
             // Brain artifact: convId = conversation UUID
             const safeName = file.replace(/\.\./g, '').replace(/[/\\]/g, '');

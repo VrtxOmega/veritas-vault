@@ -492,7 +492,7 @@ function registerIPC() {
     ipcMain.handle('vault:open-tasks', () => journal.getOpenTasks());
     ipcMain.handle('vault:project-threads', () => journal.getProjectThreads());
     ipcMain.handle('vault:session-detail', (_, convId) => journal.getSessionDetail(convId));
-    ipcMain.handle('vault:read-artifact', (_, convId, file) => journal.readArtifact(convId, file));
+    ipcMain.handle('vault:read-artifact', (_, convId, file, absPath) => journal.readArtifact(convId, file, absPath));
     ipcMain.handle('vault:pin-session', (_, convId, note) => { journal.pinSession(convId, note); return true; });
     ipcMain.handle('vault:unpin-session', (_, convId) => { journal.unpinSession(convId); return true; });
     ipcMain.handle('vault:pinned-sessions', () => journal.getPinnedSessions());

@@ -408,7 +408,7 @@ async function toggleSession(convId) {
         try {
             const data = await window.vault.getSessionDetail(convId);
             detail.innerHTML = (data.artifacts || []).map(a => `
-                <div class="artifact-item" data-action="open-artifact" data-conv-id="${convId}" data-file="${esc(a.file)}">
+                <div class="artifact-item" data-action="open-artifact" data-conv-id="${convId}" data-file="${esc(a.file)}" data-abs-path="${esc(a.absPath || '')}">
                     <div class="artifact-item-header">
                         <span class="artifact-type-badge">${esc(a.type)}</span>
                         <span class="artifact-heading">${esc(a.heading || a.file)}</span>
@@ -495,7 +495,7 @@ async function expandPinnedSession(convId) {
 }
 
 // ── Artifact Viewer ──────────────────────────────────────────
-async function openArtifact(convId, file) {
+async function openArtifact(convId, file, absPath) {
     const overlay = document.getElementById('artifact-overlay');
     const title = document.getElementById('artifact-title');
     const body = document.getElementById('artifact-body');
@@ -505,7 +505,7 @@ async function openArtifact(convId, file) {
     overlay.style.display = 'flex';
 
     try {
-        const data = await window.vault.readArtifact(convId, file);
+        const data = await window.vault.readArtifact(convId, file, absPath);
         if (data && data.content) {
             if (file.endsWith('.md')) {
                 body.innerHTML = typeof marked !== 'undefined' ? marked.parse(data.content) : `<pre>${esc(data.content)}</pre>`;
@@ -1607,7 +1607,7 @@ function setupEventDelegation() {
                 break;
             case 'open-artifact':
                 e.stopPropagation();
-                openArtifact(convId, file);
+                openArtifact(convId, file, el.dataset.absPath || null);
                 break;
             case 'open-search-result':
                 openFileFromSearch(relPath);
