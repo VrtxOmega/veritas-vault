@@ -63,6 +63,11 @@ function ollamaPost(endpoint, body, timeout = EMBED_TIMEOUT) {
             timeout,
         }, (res) => {
             let buf = '';
+            if (res.statusCode < 200 || res.statusCode >= 300) {
+                req.destroy();
+                reject(new Error(`Ollama returned ${res.statusCode}`));
+                return;
+            }
             res.on('data', chunk => buf += chunk);
             res.on('end', () => {
                 try { resolve(JSON.parse(buf)); }
@@ -170,6 +175,11 @@ function loadCheckpoint() {
         }
 
         const vecBuf = fs.readFileSync(vecPath);
+        if (vecBuf.byteLength % 4 !== 0) {
+            console.warn('[RAG] Checkpoint vector file size mismatch, discarding');
+            clearCheckpoint();
+            return null;
+        }
         const vectors = new Float32Array(vecBuf.buffer, vecBuf.byteOffset, vecBuf.byteLength / 4);
         console.log(`[RAG] Resuming from checkpoint: ${cp.embeddedCount}/${cp.totalChunks}`);
         return { ...cp, vectors };
@@ -199,6 +209,7 @@ async function buildIndex(onProgress) {
         SELECT s.doc_id, s.title, s.content, s.rel_path, s.type
         FROM search_index s
         WHERE s.content IS NOT NULL AND length(s.content) > 50
+        ORDER BY s.doc_id ASC
     `);
 
     if (rows.length === 0) return { success: false, reason: 'No documents' };
@@ -385,6 +396,11 @@ function loadIndexBackground(dataDir, onProgress) {
 
         // 2. Fast off-heap allocation (OS lazy pages, 0ms)
         const stats = fs.statSync(vecPath);
+        if (stats.size % 4 !== 0) {
+            console.error('[RAG] AI Index vector file corrupted (size not multiple of 4)');
+            _indexBuilt = false;
+            return false;
+        }
         const buffer = Buffer.alloc(stats.size); 
         _vectors = new Float32Array(buffer.buffer, buffer.byteOffset, buffer.byteLength / 4);
         _indexBuilt = true; 

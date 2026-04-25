@@ -13,7 +13,7 @@ const electronPath = require('electron');
 const cleanEnv = Object.assign({}, process.env);
 delete cleanEnv.ELECTRON_RUN_AS_NODE;
 
-const args = ['.'];
+const args = ['.', '--enable-logging'];
 if (process.argv.includes('--dev')) {
     args.unshift('--enable-logging', '--inspect');
 }
@@ -22,9 +22,7 @@ console.log('[VeritasVault] Igniting...');
 const child = spawn(electronPath, args, {
     cwd: __dirname,
     env: cleanEnv,
-    detached: true,
-    stdio: 'ignore',
+    stdio: 'inherit',
 });
-child.unref();
 
 child.on('close', (code) => process.exit(code || 0));

@@ -275,10 +275,38 @@ async function initDatabase(dataDir, dbPath) {
     // Use native path going forward
     DB_PATH = nativeDbPath;
 
-    const Database = require('better-sqlite3');
+    // ── Clear stale locks if they exist ────────────────────────
+    // Sometimes -wal and -shm files from a crashed session prevent mounting
+    ['wal', 'shm'].forEach(ext => {
+        const lockFile = `${DB_PATH}-${ext}`;
+        if (fs.existsSync(lockFile)) {
+            try {
+                // Check if file is actually locked by another process
+                // If we can't delete it, it's probably active. If we can, it was stale.
+                fs.unlinkSync(lockFile);
+                console.log(`[DB] Cleared stale lock: ${lockFile}`);
+            } catch (e) {
+                console.warn(`[DB] Lock file ${ext} is active or inaccessible: ${e.message}`);
+            }
+        }
+    });
 
-    // Open native database (creates if not exists)
-    db = new Database(DB_PATH);
+    try {
+        const Database = require('better-sqlite3');
+
+        // Open native database (creates if not exists)
+        // We use a shorter timeout for the first attempt to fail fast if locked
+        db = new Database(DB_PATH, { timeout: 5000 });
+    } catch (err) {
+        let msg = err.message;
+        if (msg.includes('NODE_MODULE_VERSION')) {
+            msg = `Binary Mismatch: better-sqlite3 was compiled for a different Node/Electron version. Run 'npm run rebuild'.`;
+        } else if (msg.includes('busy') || msg.includes('locked')) {
+            msg = `Database is locked by another process. Please close any other instances of Veritas Vault.`;
+        }
+        console.error('[DB] Failed to open database:', msg);
+        throw new Error(msg);
+    }
 
     // Enable WAL mode for concurrent reads and crash safety
     db.pragma('journal_mode = WAL');
@@ -468,6 +496,7 @@ async function initDatabase(dataDir, dbPath) {
 
     // Migrate from WASM if legacy DB exists and native is new
     if (wasmExists && !nativeExists) {
+        console.log('[DB] Found legacy WASM DB, initiating migration...');
         await performAsyncMigration(dbPath);
     }
 

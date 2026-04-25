@@ -38,6 +38,11 @@ function ollamaPost(endpoint, body) {
             timeout: TIMEOUT_MS,
         }, (res) => {
             let buf = '';
+            if (res.statusCode < 200 || res.statusCode >= 300) {
+                req.destroy();
+                reject(new Error(`Ollama returned ${res.statusCode}`));
+                return;
+            }
             res.on('data', chunk => buf += chunk);
             res.on('end', () => {
                 try { resolve(JSON.parse(buf)); }
@@ -56,6 +61,11 @@ function ollamaGet(endpoint) {
         const url = new URL(endpoint, OLLAMA_BASE);
         const req = http.get(url, { timeout: 5000 }, (res) => {
             let buf = '';
+            if (res.statusCode < 200 || res.statusCode >= 300) {
+                req.destroy();
+                reject(new Error(`Ollama returned ${res.statusCode}`));
+                return;
+            }
             res.on('data', chunk => buf += chunk);
             res.on('end', () => {
                 try { resolve(JSON.parse(buf)); }
