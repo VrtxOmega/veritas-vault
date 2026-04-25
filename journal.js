@@ -473,7 +473,7 @@ module.exports = function createJournalEngine(deps) {
 
     function deriveSessionTitle(artifacts) {
         // Prefer heading from plan/walkthrough/task/session
-        for (const pref of ['Plan', 'Walkthrough', 'Task', 'Session', 'Document']) {
+        for (const pref of ['Plan', 'Walkthrough', 'Task', 'Session', 'hermes_session', 'Document']) {
             const a = artifacts.find(x => x.type === pref);
             if (a) {
                 if (a.heading) {

@@ -1511,12 +1511,9 @@ function setupEventDelegation() {
                     window.vault.completeActionItem(parseInt(actionId)).then(() => {
                         return window.vault.getActionItems('open');
                     }).then(freshItems => {
-                        const panel = document.querySelector('.action-items-panel');
-                        if (panel) {
-                            const newHtml = renderActionItems(freshItems);
-                            const tempDiv = document.createElement('div');
-                            tempDiv.innerHTML = newHtml;
-                            panel.innerHTML = tempDiv.querySelector('.action-items-panel').innerHTML;
+                        const container = document.querySelector('.action-items-container');
+                        if (container) {
+                            container.innerHTML = renderActionItems(freshItems);
                         }
                     }).catch(err => {
                         console.error('[Vault] complete-action failed:', err);
