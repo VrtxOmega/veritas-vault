@@ -112,6 +112,36 @@
 - Single instance lock
 - 5MB request body limit
 
+
+## Installation
+
+```bash
+# Clone
+git clone https://github.com/VrtxOmega/veritas-vault.git
+cd veritas-vault
+
+# Install dependencies
+npm install
+
+# Ensure Ollama is running with qwen2.5
+ollama pull qwen2.5:7b
+
+# Start the vault
+npm start
+```
+
+## Usage
+
+Veritas Vault runs as an Electron desktop application. Once started:
+
+1. **Dashboard** — View session summaries, knowledge entries, and daily briefs
+2. **RAG Chat** — Query your captured knowledge with semantic search
+3. **Journal** — Browse auto-generated digest entries
+4. **Watcher** — Monitors filesystem changes and captures context
+5. **Clipboard Monitor** — Auto-captures copied text for knowledge retention
+
+The vault passively captures your work sessions, indexes them with MiniSearch FTS and Ollama embeddings, and generates morning briefs with actionable intelligence.
+
 ## License
 
 BSL-1.1
