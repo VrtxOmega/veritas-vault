@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VERITAS VAULT v3.0 — Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="demo.css">
+</head>
+<body>
+    <!-- Titlebar -->
+    <div id="titlebar">
+        <div class="titlebar-left">
+            <span class="titlebar-icon">🏛</span>
+            <span class="titlebar-title">VERITAS VAULT</span>
+            <span class="titlebar-version">v3.0</span>
+        </div>
+        <div class="titlebar-center">
+            <div class="status-pill online">
+                <span class="status-dot"></span>
+                <span id="status-text">Watching · 847 documents</span>
+            </div>
+        </div>
+        <div class="titlebar-controls">
+            <button class="titlebar-btn notification-bell" id="notification-bell" title="Follow-ups">
+                🔔<span class="followup-badge">3</span>
+            </button>
+            <button class="titlebar-btn">─</button>
+            <button class="titlebar-btn">□</button>
+            <button class="titlebar-btn titlebar-close">✕</button>
+        </div>
+    </div>
+
+    <!-- Main Layout -->
+    <div id="app-container">
+        <!-- Sidebar -->
+        <nav id="sidebar">
+            <div class="nav-group">
+                <button class="nav-btn active" data-panel="journal" title="Journal">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                </button>
+                <button class="nav-btn" data-panel="search" title="Search">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                </button>
+                <button class="nav-btn" data-panel="threads" title="Project Threads">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>
+                </button>
+                <button class="nav-btn" data-panel="tasks" title="Open Tasks">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                </button>
+                <button class="nav-btn" data-panel="intelligence" title="AI Intelligence">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a8 8 0 0 0-8 8c0 3.4 2.1 6.3 5 7.4V20h6v-2.6c2.9-1.1 5-4 5-7.4a8 8 0 0 0-8-8z"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="9" y1="22" x2="15" y2="22"/></svg>
+                </button>
+                <button class="nav-btn" data-panel="ask" title="Ask Vault">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </button>
+            </div>
+            <div class="nav-group nav-bottom">
+                <button class="nav-btn" data-panel="settings" title="Settings">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Content -->
+        <main id="content">
+            <!-- Journal Panel -->
+            <section id="panel-journal" class="panel active"></section>
+            <!-- Search Panel -->
+            <section id="panel-search" class="panel"></section>
+            <!-- Threads Panel -->
+            <section id="panel-threads" class="panel"></section>
+            <!-- Tasks Panel -->
+            <section id="panel-tasks" class="panel"></section>
+            <!-- Intelligence Panel -->
+            <section id="panel-intelligence" class="panel"></section>
+            <!-- Ask Panel -->
+            <section id="panel-ask" class="panel"></section>
+            <!-- Settings Panel -->
+            <section id="panel-settings" class="panel"></section>
+        </main>
+    </div>
+
+    <!-- Follow-Up Panel -->
+    <div id="followup-panel" class="followup-panel" style="display:none">
+        <div class="followup-header"><span>Smart Follow-Ups</span><button class="btn-ghost btn-xs" id="close-followups">✕</button></div>
+        <div id="followup-list" class="followup-list"></div>
+    </div>
+
+    <!-- Artifact Overlay -->
+    <div id="artifact-overlay" class="artifact-overlay" style="display:none">
+        <div class="artifact-panel">
+            <div class="artifact-header">
+                <span id="artifact-title" class="artifact-title"></span>
+                <button class="artifact-close" id="close-artifact">✕</button>
+            </div>
+            <div id="artifact-body" class="artifact-body"></div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast" style="display:none"></div>
+
+    <script src="demo.js"></script>
+</body>
+</html>
